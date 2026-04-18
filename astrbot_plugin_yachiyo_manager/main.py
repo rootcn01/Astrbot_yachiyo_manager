@@ -1,7 +1,7 @@
 import asyncio
 import json
+import re
 from pathlib import Path
-from typing import Optional
 
 from astrbot.api.star import Star, Context
 from astrbot.api.event import filter, AstrMessageEvent
@@ -11,7 +11,6 @@ from .utils.reminder_manager import ReminderManager
 from .utils.platform_adapter import PlatformAdapter
 from .utils.personality import PersonalityEngine
 from .utils.napcat_client import NapCatClient
-from .utils.intent_recognizer import IntentRecognizer
 
 
 class YachiyoManager(Star):
@@ -20,11 +19,9 @@ class YachiyoManager(Star):
         self.context = context
         self.config = config or {}
 
-        # 数据目录 - 使用相对路径
         self.data_dir = Path("data/plugin_data/yachiyo_manager")
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-        # 初始化各模块
         self.reminder_manager = ReminderManager()
         self.platform_adapter = PlatformAdapter(context)
         self.personality_engine = PersonalityEngine(context, self.config)
@@ -32,17 +29,11 @@ class YachiyoManager(Star):
             api_url=self.config.get("napcat_api_url", "http://localhost:3000"),
             api_token=self.config.get("napcat_api_token", "")
         )
-        self.intent_recognizer = IntentRecognizer(context, self.config)
 
-        # 加载数据
         self.whitelist = self._load_json("whitelist.json", {"qq_whitelist": [], "wechat_whitelist": []})
         self.user_configs = self._load_json("user_configs.json", {})
 
-        # 是否启用意图识别（智能提醒功能）
-        self.intent_recognition_enabled = self.config.get("intent_recognition_enabled", True)
-
     def _load_json(self, filename: str, default: dict) -> dict:
-        """加载 JSON 数据文件"""
         path = self.data_dir / filename
         if path.exists():
             try:
@@ -53,14 +44,11 @@ class YachiyoManager(Star):
         return default
 
     def _save_json(self, filename: str, data: dict):
-        """保存 JSON 数据文件"""
         path = self.data_dir / filename
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-    # ==================== 意图识别监听 ====================
-
-    @filter.all_message()
+    @filter.on_message()
     async def handle_all_message(self, event: AstrMessageEvent):
         """监听所有消息，进行意图识别"""
         # 忽略命令消息
@@ -71,8 +59,9 @@ class YachiyoManager(Star):
         if not event.message_str.strip():
             return
 
-        # 检查意图识别是否启用
-        if not self.intent_recognition_enabled:
+        # 尝试识别提醒意图
+        intent = self._parse_reminder_intent(event.message_str)
+        if not intent:
             return
 
         # 平台和用户检查
@@ -82,41 +71,63 @@ class YachiyoManager(Star):
         if not self._check_whitelist(platform, user_id):
             return
 
-        # 调用 LLM 进行意图识别
-        result = await self.intent_recognizer.recognize(event.message_str)
+        delay_minutes = intent["delay_minutes"]
+        message = intent["message"]
+        alert_type = self.config.get("default_alert_type", "normal")
 
-        if result.get("intent") == "reminder":
-            delay_minutes = result.get("delay_minutes")
-            message = result.get("message")
+        yield event.plain_result(f"收到啦~ FUSHI 会在 {delay_minutes} 分钟后叫你的哦♪")
 
-            # 使用默认提醒类型
-            alert_type = self.config.get("default_alert_type", "normal")
-
-            # 确认回复
-            yield event.plain_result(f"收到啦~ FUSHI 会在 {delay_minutes} 分钟后叫你的哦♪")
-
-            # 创建后台任务
-            asyncio.create_task(
-                self.reminder_manager.create_reminder(
-                    user_id=user_id,
-                    platform=platform,
-                    delay_seconds=delay_minutes * 60,
-                    message=message,
-                    alert_type=alert_type,
-                    config=self.config,
-                    send_func=self._send_reminder,
-                    event=event
-                )
+        asyncio.create_task(
+            self.reminder_manager.create_reminder(
+                user_id=user_id,
+                platform=platform,
+                delay_seconds=delay_minutes * 60,
+                message=message,
+                alert_type=alert_type,
+                config=self.config,
+                send_func=self._send_reminder,
+                event=event
             )
+        )
 
-        # 清理 LLM 会话
-        await self.intent_recognizer.cleanup()
+    def _parse_reminder_intent(self, text: str) -> dict:
+        """
+        解析提醒意图，使用关键词匹配
+        返回: {"delay_minutes": int, "message": str} 或 None
+        """
+        # 提醒意图关键词
+        keywords = ["提醒", "叫醒", "分钟后", "过会", "过一会儿", "待会"]
 
-    # ==================== 命令 Handlers ====================
+        # 检查是否包含提醒关键词
+        has_keyword = any(kw in text for kw in keywords)
+        if not has_keyword:
+            return None
+
+        # 匹配 "X分钟后..." 或 "过X分钟..."
+        patterns = [
+            r"(\d+)分钟.*?(.*)",      # 5分钟后提醒我喝水
+            r"过(\d+)分钟(.*)",       # 过5分钟提醒我喝水
+            r"待会(.*?)(\d+)分钟",    # 待会5分钟后提醒我
+            r"过一会(.*)",            # 过一会儿提醒我（默认5分钟）
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match:
+                groups = match.groups()
+                if len(groups) >= 2 and groups[0] and groups[1]:
+                    delay = int(groups[0])
+                    message = groups[1].strip() if groups[1] else ""
+                    if message and delay > 0:
+                        return {"delay_minutes": delay, "message": message}
+                elif len(groups) == 1:
+                    # 过一会儿 的情况，默认5分钟
+                    return {"delay_minutes": 5, "message": groups[0].strip()}
+
+        return None
 
     @filter.command("yachiyo_fushi_reminder")
     async def handle_fushi_reminder(self, event: AstrMessageEvent, delay_minutes: int = None, message: str = None, alert_type: str = None):
-        """设定 FUSHI 闹钟"""
         platform = self.platform_adapter.detect_platform(event)
         user_id = self.platform_adapter.get_user_id(event)
 
@@ -148,7 +159,6 @@ class YachiyoManager(Star):
 
     @filter.command("yachiyo_voice_mode")
     async def handle_voice_mode(self, event: AstrMessageEvent, enable: bool = None):
-        """切换语音模式"""
         user_id = self.platform_adapter.get_user_id(event)
         if user_id not in self.user_configs:
             self.user_configs[user_id] = {
@@ -167,7 +177,6 @@ class YachiyoManager(Star):
 
     @filter.command("yachiyo_whitelist_add")
     async def handle_whitelist_add(self, event: AstrMessageEvent, qq_id: str = None):
-        """添加白名单"""
         if not qq_id:
             yield event.plain_result("请提供要添加的 QQ ID\n例如：yachiyo_whitelist_add 123456")
             return
@@ -182,7 +191,6 @@ class YachiyoManager(Star):
 
     @filter.command("yachiyo_whitelist_remove")
     async def handle_whitelist_remove(self, event: AstrMessageEvent, qq_id: str = None):
-        """移除白名单"""
         if not qq_id:
             yield event.plain_result("请提供要移除的 QQ ID\n例如：yachiyo_whitelist_remove 123456")
             return
@@ -197,25 +205,11 @@ class YachiyoManager(Star):
 
     @filter.command("yachiyo_whitelist_status")
     async def handle_whitelist_status(self, event: AstrMessageEvent):
-        """查看白名单状态"""
         qq_list = self.whitelist.get("qq_whitelist", [])
         display_list = [str(qq) for qq in qq_list]
         yield event.plain_result(f"QQ 白名单共有 {len(display_list)} 人：\n{', '.join(display_list) if display_list else '（空）'}")
 
-    @filter.command("yachiyo_intent_toggle")
-    async def handle_intent_toggle(self, event: AstrMessageEvent, enable: bool = None):
-        """开启/关闭智能意图识别"""
-        if enable is None:
-            yield event.plain_result(f"智能意图识别：{'开启' if self.intent_recognition_enabled else '关闭'}\n使用 yachiyo_intent_toggle true/false 来切换")
-            return
-
-        self.intent_recognition_enabled = enable
-        yield event.plain_result("智能意图识别已开启~" if enable else "智能意图识别已关闭。")
-
-    # ==================== 内部方法 ====================
-
     def _check_whitelist(self, platform: str, user_id: str) -> bool:
-        """检查白名单"""
         if not user_id:
             return False
         if platform == "qq":
@@ -229,7 +223,6 @@ class YachiyoManager(Star):
         return True
 
     async def _send_reminder(self, user_id: str, platform: str, message: str, alert_type: str, config: dict, event: AstrMessageEvent):
-        """发送提醒"""
         umo = self.platform_adapter.get_unified_msg_origin(event)
 
         if alert_type == "normal":
@@ -255,7 +248,6 @@ class YachiyoManager(Star):
                 await self._send_urgent_text_bomb(umo, message, config)
 
     async def _send_urgent_text_bomb(self, umo: str, message: str, config: dict):
-        """发送 urgent 文字轰炸"""
         template = config.get("urgent_enhancement_template", "神明大人！{message}！快醒醒！")
         messages = [
             template.format(message=message),

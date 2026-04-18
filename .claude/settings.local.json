@@ -16,7 +16,11 @@
       "Bash(npm install *)",
       "Bash(npm root *)",
       "Bash(npm uninstall *)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "mcp__Tavily2__tavily_crawl",
+      "mcp__Tavily2__tavily_extract",
+      "WebSearch",
+      "mcp__Tavily2__tavily_research"
     ]
   }
 }
