@@ -1,9 +1,8 @@
 {
   "default_alert_type": {
-    "type": "select",
-    "options": ["normal", "urgent"],
+    "type": "string",
     "default": "normal",
-    "desc": "默认提醒类型"
+    "desc": "默认提醒类型 (normal/urgent)"
   },
   "voice_character": {
     "type": "str",

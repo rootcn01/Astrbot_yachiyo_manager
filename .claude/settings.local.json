@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('D:/DATA/Claude_workspace/Yachiyo_Project/output_md/Yachiyo_Tone_FewShots.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\); console.log\\('营业:', d.emotion_categories.顶流营业状态.quotes.length, '条'\\); console.log\\('温柔:', d.emotion_categories.对彩叶的温柔安慰.quotes.length, '条'\\); console.log\\('腹黑:', d.emotion_categories.偶尔腹黑调戏.quotes.length, '条'\\)\")",
+      "mcp__mcpServers-1__tavily_crawl",
+      "mcp__mcpServers-1__tavily_search",
+      "mcp__mcpServers-1__tavily_research",
+      "mcp__mcpServers-1__tavily_extract",
+      "Bash(python -m py_compile astrbot_plugin_yachiyo_manager/main.py)",
+      "Bash(python -m py_compile astrbot_plugin_yachiyo_manager/utils/*.py)",
+      "Bash(python -c \"import json; json.load\\(open\\('astrbot_plugin_yachiyo_manager/_conf_schema.json'\\)\\); print\\('JSON valid'\\)\")",
+      "Bash(python -c \"import json; json.load\\(open\\('astrbot_plugin_yachiyo_manager/_conf_schema.json', encoding='utf-8'\\)\\); print\\('JSON valid'\\)\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(claude --version)",
+      "Bash(npm install *)",
+      "Bash(npm root *)",
+      "Bash(npm uninstall *)"
+    ]
+  }
+}
