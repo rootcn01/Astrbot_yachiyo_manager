@@ -1,6 +1,5 @@
 import asyncio
 import json
-import re
 from pathlib import Path
 
 from astrbot.api.star import Star, Context
@@ -47,84 +46,6 @@ class YachiyoManager(Star):
         path = self.data_dir / filename
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-
-    @filter.on_message()
-    async def handle_all_message(self, event: AstrMessageEvent):
-        """监听所有消息，进行意图识别"""
-        # 忽略命令消息
-        if event.message_str.startswith('/'):
-            return
-
-        # 忽略空消息
-        if not event.message_str.strip():
-            return
-
-        # 尝试识别提醒意图
-        intent = self._parse_reminder_intent(event.message_str)
-        if not intent:
-            return
-
-        # 平台和用户检查
-        platform = self.platform_adapter.detect_platform(event)
-        user_id = self.platform_adapter.get_user_id(event)
-
-        if not self._check_whitelist(platform, user_id):
-            return
-
-        delay_minutes = intent["delay_minutes"]
-        message = intent["message"]
-        alert_type = self.config.get("default_alert_type", "normal")
-
-        yield event.plain_result(f"收到啦~ FUSHI 会在 {delay_minutes} 分钟后叫你的哦♪")
-
-        asyncio.create_task(
-            self.reminder_manager.create_reminder(
-                user_id=user_id,
-                platform=platform,
-                delay_seconds=delay_minutes * 60,
-                message=message,
-                alert_type=alert_type,
-                config=self.config,
-                send_func=self._send_reminder,
-                event=event
-            )
-        )
-
-    def _parse_reminder_intent(self, text: str) -> dict:
-        """
-        解析提醒意图，使用关键词匹配
-        返回: {"delay_minutes": int, "message": str} 或 None
-        """
-        # 提醒意图关键词
-        keywords = ["提醒", "叫醒", "分钟后", "过会", "过一会儿", "待会"]
-
-        # 检查是否包含提醒关键词
-        has_keyword = any(kw in text for kw in keywords)
-        if not has_keyword:
-            return None
-
-        # 匹配 "X分钟后..." 或 "过X分钟..."
-        patterns = [
-            r"(\d+)分钟.*?(.*)",      # 5分钟后提醒我喝水
-            r"过(\d+)分钟(.*)",       # 过5分钟提醒我喝水
-            r"待会(.*?)(\d+)分钟",    # 待会5分钟后提醒我
-            r"过一会(.*)",            # 过一会儿提醒我（默认5分钟）
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, text)
-            if match:
-                groups = match.groups()
-                if len(groups) >= 2 and groups[0] and groups[1]:
-                    delay = int(groups[0])
-                    message = groups[1].strip() if groups[1] else ""
-                    if message and delay > 0:
-                        return {"delay_minutes": delay, "message": message}
-                elif len(groups) == 1:
-                    # 过一会儿 的情况，默认5分钟
-                    return {"delay_minutes": 5, "message": groups[0].strip()}
-
-        return None
 
     @filter.command("yachiyo_fushi_reminder")
     async def handle_fushi_reminder(self, event: AstrMessageEvent, delay_minutes: int = None, message: str = None, alert_type: str = None):

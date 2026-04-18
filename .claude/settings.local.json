@@ -20,7 +20,8 @@
       "mcp__Tavily2__tavily_crawl",
       "mcp__Tavily2__tavily_extract",
       "WebSearch",
-      "mcp__Tavily2__tavily_research"
+      "mcp__Tavily2__tavily_research",
+      "Bash(python -c \"import json; json.load\\(open\\('astrbot_plugin_yachiyo_manager/_conf_schema.json', encoding='utf-8'\\)\\); print\\('JSON OK'\\)\")"
     ]
   }
 }
