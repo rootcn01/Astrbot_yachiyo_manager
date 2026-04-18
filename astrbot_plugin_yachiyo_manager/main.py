@@ -11,6 +11,7 @@ from .utils.reminder_manager import ReminderManager
 from .utils.platform_adapter import PlatformAdapter
 from .utils.personality import PersonalityEngine
 from .utils.napcat_client import NapCatClient
+from .utils.intent_recognizer import IntentRecognizer
 
 
 class YachiyoManager(Star):
@@ -31,10 +32,14 @@ class YachiyoManager(Star):
             api_url=self.config.get("napcat_api_url", "http://localhost:3000"),
             api_token=self.config.get("napcat_api_token", "")
         )
+        self.intent_recognizer = IntentRecognizer(context, self.config)
 
         # 加载数据
         self.whitelist = self._load_json("whitelist.json", {"qq_whitelist": [], "wechat_whitelist": []})
         self.user_configs = self._load_json("user_configs.json", {})
+
+        # 是否启用意图识别（智能提醒功能）
+        self.intent_recognition_enabled = self.config.get("intent_recognition_enabled", True)
 
     def _load_json(self, filename: str, default: dict) -> dict:
         """加载 JSON 数据文件"""
@@ -52,6 +57,60 @@ class YachiyoManager(Star):
         path = self.data_dir / filename
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+
+    # ==================== 意图识别监听 ====================
+
+    @filter.all_message()
+    async def handle_all_message(self, event: AstrMessageEvent):
+        """监听所有消息，进行意图识别"""
+        # 忽略命令消息
+        if event.message_str.startswith('/'):
+            return
+
+        # 忽略空消息
+        if not event.message_str.strip():
+            return
+
+        # 检查意图识别是否启用
+        if not self.intent_recognition_enabled:
+            return
+
+        # 平台和用户检查
+        platform = self.platform_adapter.detect_platform(event)
+        user_id = self.platform_adapter.get_user_id(event)
+
+        if not self._check_whitelist(platform, user_id):
+            return
+
+        # 调用 LLM 进行意图识别
+        result = await self.intent_recognizer.recognize(event.message_str)
+
+        if result.get("intent") == "reminder":
+            delay_minutes = result.get("delay_minutes")
+            message = result.get("message")
+
+            # 使用默认提醒类型
+            alert_type = self.config.get("default_alert_type", "normal")
+
+            # 确认回复
+            yield event.plain_result(f"收到啦~ FUSHI 会在 {delay_minutes} 分钟后叫你的哦♪")
+
+            # 创建后台任务
+            asyncio.create_task(
+                self.reminder_manager.create_reminder(
+                    user_id=user_id,
+                    platform=platform,
+                    delay_seconds=delay_minutes * 60,
+                    message=message,
+                    alert_type=alert_type,
+                    config=self.config,
+                    send_func=self._send_reminder,
+                    event=event
+                )
+            )
+
+        # 清理 LLM 会话
+        await self.intent_recognizer.cleanup()
 
     # ==================== 命令 Handlers ====================
 
@@ -142,6 +201,16 @@ class YachiyoManager(Star):
         qq_list = self.whitelist.get("qq_whitelist", [])
         display_list = [str(qq) for qq in qq_list]
         yield event.plain_result(f"QQ 白名单共有 {len(display_list)} 人：\n{', '.join(display_list) if display_list else '（空）'}")
+
+    @filter.command("yachiyo_intent_toggle")
+    async def handle_intent_toggle(self, event: AstrMessageEvent, enable: bool = None):
+        """开启/关闭智能意图识别"""
+        if enable is None:
+            yield event.plain_result(f"智能意图识别：{'开启' if self.intent_recognition_enabled else '关闭'}\n使用 yachiyo_intent_toggle true/false 来切换")
+            return
+
+        self.intent_recognition_enabled = enable
+        yield event.plain_result("智能意图识别已开启~" if enable else "智能意图识别已关闭。")
 
     # ==================== 内部方法 ====================
 

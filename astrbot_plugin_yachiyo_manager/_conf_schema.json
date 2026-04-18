@@ -19,6 +19,11 @@
     "default": false,
     "desc": "微信白名单开关"
   },
+  "intent_recognition_enabled": {
+    "type": "bool",
+    "default": true,
+    "desc": "开启智能意图识别（自动识别对话中的提醒意图）"
+  },
   "napcat_api_url": {
     "type": "string",
     "default": "http://localhost:3000",
