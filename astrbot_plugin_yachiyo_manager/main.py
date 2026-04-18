@@ -19,8 +19,8 @@ class YachiyoManager(Star):
         self.context = context
         self.config = config or {}
 
-        # 数据目录
-        self.data_dir = Path(context.config.get("data_dir", "data")) / "plugin_data" / "yachiyo_manager"
+        # 数据目录 - 使用相对路径
+        self.data_dir = Path("data/plugin_data/yachiyo_manager")
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
         # 初始化各模块
@@ -58,7 +58,6 @@ class YachiyoManager(Star):
     @filter.command("yachiyo_fushi_reminder")
     async def handle_fushi_reminder(self, event: AstrMessageEvent, delay_minutes: int = None, message: str = None, alert_type: str = None):
         """设定 FUSHI 闹钟"""
-        # 1. 平台和用户检查
         platform = self.platform_adapter.detect_platform(event)
         user_id = self.platform_adapter.get_user_id(event)
 
@@ -66,19 +65,15 @@ class YachiyoManager(Star):
             yield event.plain_result("该功能仅对白名单用户开放哦~")
             return
 
-        # 2. 参数验证
         if delay_minutes is None or not message:
             yield event.plain_result("参数不完整哦~ 请提供 delay_minutes 和 message\n例如：yachiyo_fushi_reminder 5 该喝水了 normal")
             return
 
-        # 3. 使用默认提醒类型
         if alert_type is None:
             alert_type = self.config.get("default_alert_type", "normal")
 
-        # 4. 确认回复
         yield event.plain_result(f"收到啦~ FUSHI 会在 {delay_minutes} 分钟后叫你的哦♪")
 
-        # 5. 创建后台任务
         asyncio.create_task(
             self.reminder_manager.create_reminder(
                 user_id=user_id,
@@ -114,48 +109,39 @@ class YachiyoManager(Star):
     @filter.command("yachiyo_whitelist_add")
     async def handle_whitelist_add(self, event: AstrMessageEvent, qq_id: str = None):
         """添加白名单"""
-        if not self._is_admin(event):
-            yield event.plain_result("只有管理员才能操作白名单哦~")
-            return
-
         if not qq_id:
             yield event.plain_result("请提供要添加的 QQ ID\n例如：yachiyo_whitelist_add 123456")
             return
 
-        if qq_id not in self.whitelist["qq_whitelist"]:
-            self.whitelist["qq_whitelist"].append(qq_id)
+        qq_id_str = str(qq_id)
+        if qq_id_str not in self.whitelist["qq_whitelist"]:
+            self.whitelist["qq_whitelist"].append(qq_id_str)
             self._save_json("whitelist.json", self.whitelist)
-            yield event.plain_result(f"已将 {qq_id} 加入白名单♪")
+            yield event.plain_result(f"已将 {qq_id_str} 加入白名单♪")
         else:
             yield event.plain_result("该账号已在白名单中哦~")
 
     @filter.command("yachiyo_whitelist_remove")
     async def handle_whitelist_remove(self, event: AstrMessageEvent, qq_id: str = None):
         """移除白名单"""
-        if not self._is_admin(event):
-            yield event.plain_result("只有管理员才能操作白名单哦~")
-            return
-
         if not qq_id:
             yield event.plain_result("请提供要移除的 QQ ID\n例如：yachiyo_whitelist_remove 123456")
             return
 
-        if qq_id in self.whitelist["qq_whitelist"]:
-            self.whitelist["qq_whitelist"].remove(qq_id)
+        qq_id_str = str(qq_id)
+        if qq_id_str in self.whitelist["qq_whitelist"]:
+            self.whitelist["qq_whitelist"].remove(qq_id_str)
             self._save_json("whitelist.json", self.whitelist)
-            yield event.plain_result(f"已将 {qq_id} 从白名单移除")
+            yield event.plain_result(f"已将 {qq_id_str} 从白名单移除")
         else:
             yield event.plain_result("该账号不在白名单中哦~")
 
     @filter.command("yachiyo_whitelist_status")
     async def handle_whitelist_status(self, event: AstrMessageEvent):
         """查看白名单状态"""
-        if not self._is_admin(event):
-            yield event.plain_result("只有管理员才能查看白名单哦~")
-            return
-
         qq_list = self.whitelist.get("qq_whitelist", [])
-        yield event.plain_result(f"QQ 白名单共有 {len(qq_list)} 人：\n{', '.join(qq_list) if qq_list else '（空）'}")
+        display_list = [str(qq) for qq in qq_list]
+        yield event.plain_result(f"QQ 白名单共有 {len(display_list)} 人：\n{', '.join(display_list) if display_list else '（空）'}")
 
     # ==================== 内部方法 ====================
 
@@ -165,32 +151,25 @@ class YachiyoManager(Star):
             return False
         if platform == "qq":
             if self.config.get("qq_whitelist_enabled", True):
-                return user_id in self.whitelist.get("qq_whitelist", [])
+                return user_id in [str(qq) for qq in self.whitelist.get("qq_whitelist", [])]
             return True
         elif platform == "wechat":
             if self.config.get("wechat_whitelist_enabled", False):
-                return user_id in self.whitelist.get("wechat_whitelist", [])
+                return user_id in [str(qq) for qq in self.whitelist.get("wechat_whitelist", [])]
             return True
         return True
-
-    def _is_admin(self, event: AstrMessageEvent) -> bool:
-        """检查管理员权限"""
-        sender_info = getattr(event, "sender_info", {}) or {}
-        return sender_info.get("is_admin", False)
 
     async def _send_reminder(self, user_id: str, platform: str, message: str, alert_type: str, config: dict, event: AstrMessageEvent):
         """发送提醒"""
         umo = self.platform_adapter.get_unified_msg_origin(event)
 
         if alert_type == "normal":
-            # 普通提醒：使用模板格式化
             template = config.get("normal_message_template", "【FUSHI 闹钟】叮铃铃~ 神明大人，{message}")
             formatted_message = template.format(message=message)
             await self.platform_adapter.send_message(umo, formatted_message)
 
         elif alert_type == "urgent":
             if platform == "qq" and self.platform_adapter.is_group_message(event):
-                # QQ 群聊：先用 LLM 人格化，再用 TTS
                 personalized_text = await self.personality_engine.personalize(message)
                 group_id = self.platform_adapter.get_group_id(event)
                 tts_success = await self.napcat_client.send_group_ai_record(
@@ -202,10 +181,8 @@ class YachiyoManager(Star):
                     logger.warning("TTS 发送失败，fallback 到文字")
                     await self._send_urgent_text_bomb(umo, message, config)
                 else:
-                    # TTS 成功后再发一条文字增强
                     await self._send_urgent_text_bomb(umo, message, config)
             else:
-                # 其他情况：文字轰炸
                 await self._send_urgent_text_bomb(umo, message, config)
 
     async def _send_urgent_text_bomb(self, umo: str, message: str, config: dict):
