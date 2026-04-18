@@ -1,0 +1,48 @@
+{
+  "default_alert_type": {
+    "type": "select",
+    "options": ["normal", "urgent"],
+    "default": "normal",
+    "desc": "默认提醒类型"
+  },
+  "voice_character": {
+    "type": "str",
+    "default": "yachiyo",
+    "desc": "TTS 语音角色名称（用于 NapCat send_group_ai_record）"
+  },
+  "qq_whitelist_enabled": {
+    "type": "boolean",
+    "default": true,
+    "desc": "QQ 白名单开关（true=仅白名单可用，false=所有人可用）"
+  },
+  "wechat_whitelist_enabled": {
+    "type": "boolean",
+    "default": false,
+    "desc": "微信白名单开关（默认 false，微信用户均可使用）"
+  },
+  "napcat_api_url": {
+    "type": "str",
+    "default": "http://localhost:3000",
+    "desc": "NapCat HTTP API 地址（仅 QQ 平台需要）"
+  },
+  "napcat_api_token": {
+    "type": "str",
+    "default": "",
+    "desc": "NapCat API Token（用于认证）"
+  },
+  "personality_prompt": {
+    "type": "text",
+    "default": "你是月见八千代，8000岁的月读空间管理员。语气温柔但略带腹黑，会用「神明大人」称呼用户。转述消息时要保持这个角色。",
+    "desc": "人格化用 LLM Prompt（用于 urgent TTS 场景）"
+  },
+  "normal_message_template": {
+    "type": "str",
+    "default": "【FUSHI 闹钟】叮铃铃~ 神明大人，{message}",
+    "desc": "普通提醒消息模板（{message} 为用户内容）"
+  },
+  "urgent_enhancement_template": {
+    "type": "str",
+    "default": "神明大人！{message}！快醒醒！",
+    "desc": "Urgent 文字增强模板"
+  }
+}

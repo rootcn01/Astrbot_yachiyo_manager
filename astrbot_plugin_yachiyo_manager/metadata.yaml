@@ -1,0 +1,6 @@
+name: astrbot_plugin_yachiyo_manager
+display_name: 月见八千代管理插件
+desc: 月见八千代的专属技能管理插件，包含 FUSHI 定时提醒、多模态通知等
+author: Yachiyo
+version: 1.0.0
+astrbot_version: ">=4.0.0"
