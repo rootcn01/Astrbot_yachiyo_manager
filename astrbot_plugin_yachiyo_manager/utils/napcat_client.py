@@ -1,5 +1,7 @@
 import httpx
 from typing import Optional
+from astrbot.api import logger
+
 
 class NapCatClient:
     def __init__(self, api_url: str, api_token: str):
@@ -24,8 +26,7 @@ class NapCatClient:
             )
             return response.status_code == 200
         except Exception as e:
-            import logging
-            logging.warning(f"NapCat API 调用失败: {e}")
+            logger.warning(f"NapCat API 调用失败: {e}")
             return False
 
     async def send_private_msg(self, user_id: int, message: str) -> bool:
@@ -37,7 +38,8 @@ class NapCatClient:
                 headers=self._get_headers()
             )
             return response.status_code == 200
-        except Exception:
+        except Exception as e:
+            logger.warning(f"NapCat 私聊发送失败: {e}")
             return False
 
     async def close(self):

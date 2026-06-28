@@ -2,46 +2,51 @@
   "default_alert_type": {
     "type": "string",
     "default": "normal",
-    "desc": "默认提醒类型 (normal/urgent)"
-  },
-  "voice_character": {
-    "type": "string",
-    "default": "yachiyo",
-    "desc": "TTS 语音角色名称"
-  },
-  "qq_whitelist_enabled": {
-    "type": "bool",
-    "default": true,
-    "desc": "QQ 白名单开关"
-  },
-  "wechat_whitelist_enabled": {
-    "type": "bool",
-    "default": false,
-    "desc": "微信白名单开关"
-  },
-  "napcat_api_url": {
-    "type": "string",
-    "default": "http://localhost:3000",
-    "desc": "NapCat HTTP API 地址"
-  },
-  "napcat_api_token": {
-    "type": "string",
-    "default": "",
-    "desc": "NapCat API Token"
-  },
-  "personality_prompt": {
-    "type": "text",
-    "default": "你是月见八千代，8000岁的月读空间管理员。语气温柔但略带腹黑，会用「神明大人」称呼用户。转述消息时要保持这个角色。",
-    "desc": "人格化用 LLM Prompt"
+    "desc": "默认提醒类型",
+    "options": ["normal", "urgent"],
+    "labels": ["温柔提醒 (normal)", "紧急提醒+语音 (urgent)"],
+    "hint": "normal = 到时间发一条温柔文字提醒。urgent = QQ群聊发TTS语音，其他平台发三次文字提醒"
   },
   "normal_message_template": {
     "type": "string",
     "default": "【FUSHI 闹钟】叮铃铃~ 神明大人，{message}",
-    "desc": "普通提醒消息模板"
+    "desc": "普通提醒消息模板",
+    "hint": "{message} 会被替换为提醒内容（例如「该喝水了」）。请保留 {message} 占位符。"
   },
   "urgent_enhancement_template": {
     "type": "string",
     "default": "神明大人！{message}！快醒醒！",
-    "desc": "Urgent 文字增强模板"
+    "desc": "紧急提醒消息模板",
+    "hint": "TTS语音失败或非QQ群聊时使用。{message} 会被替换为提醒内容。"
+  },
+  "napcat_api_url": {
+    "type": "string",
+    "default": "http://localhost:3000",
+    "desc": "NapCat HTTP 地址",
+    "hint": "部署在云服务器上时需改为实际地址，如 http://110.40.182.106:3000。仅QQ群聊紧急提醒用到。"
+  },
+  "napcat_api_token": {
+    "type": "string",
+    "default": "",
+    "desc": "NapCat 访问令牌",
+    "hint": "大多数自建NapCat不需要认证，留空即可。仅QQ群聊紧急提醒用到。"
+  },
+  "persona_enabled": {
+    "type": "bool",
+    "default": true,
+    "desc": "启用八千代角色人格",
+    "hint": "开启后AI会以月见八千代的身份和语气回复。关闭则用默认AI身份。"
+  },
+  "qq_whitelist_enabled": {
+    "type": "bool",
+    "default": true,
+    "desc": "QQ 白名单开关",
+    "hint": "开启后仅白名单内QQ号可使用插件命令。用 /yachiyo_whitelist_add 添加用户。"
+  },
+  "futureplan_repo_path": {
+    "type": "string",
+    "default": "/data/Futureplan",
+    "desc": "Futureplan 数据仓库路径",
+    "hint": "Git clone 的 Futureplan 数据仓库绝对路径。插件通过此路径读写 dashboard.md、inbox.md、finance/ 等文件。"
   }
 }

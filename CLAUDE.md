@@ -1,8 +1,26 @@
-# CLAUDE.md
+# CLAUDE.md — 月见八千代 AstrBot 插件
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+> 版本：v2.3.0 | 最后更新：2026-06-28
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## 项目定位
+
+这是 Futureplan LifeOS 的移动端接入层。八千代通过微信提供自然语言记账/灵感/待办/汇报/查询。深度处理由 Claude Code 桌面端完成。
+
+## 关键架构
+
+- 工具注册：`@llm_tool`（AstrBot 全局，所有聊天流可用）
+- 数据源：`/data/Futureplan/` markdown 文件
+- git 同步：每次写后 fire-and-forget push
+- 身份安全：`_is_owner()` gate
+
+## v2.3.0 变更（2026-06-28）
+
+- `checkin.py`：`format_checkin_line()` +overtime 参数
+- `main.py`：`record_checkin()` +overtime 参数
+- `dashboard.py`：表格解析兼容新旧格式（8/9列）+ `extract_wfa()` + `extract_overtime_stats()`
+- `context.py`：上下文块 +加班统计 +WFA +加班周建议
+
+---
 
 ## 1. Think Before Coding
 
