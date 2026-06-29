@@ -227,6 +227,43 @@ class YachiyoManager(Star):
 
         return f"NOTE_OK|type={note_type}|content_preview={content[:100]}|date={datetime.now().strftime('%Y-%m-%d')}"
 
+    @llm_tool(name="record_food")
+    async def record_food(self, event: AstrMessageEvent,
+                          food: str, time_hint: str = "") -> str:
+        """记录吃了什么。当用户提到吃了东西、吃饭、点了外卖、喝了奶茶、吃了零食时调用。
+        自动根据当前时间推断餐型（午餐/晚餐/加餐）。
+
+        Args:
+            food(string): 吃了什么，简短描述即可。例如"黄焖鸡米饭""牛肉面""一杯奶茶""一个苹果"
+            time_hint(string): 用户显式提到的时间，例如"刚才""半小时前"。不填则用当前时间自动推断。
+        """
+        if not self._is_owner(event):
+            return "OWNER_ONLY"
+
+        try:
+            repo_path = ensure_repo_path(self.config)
+        except FileNotFoundError:
+            return "TOOL_ERROR|reason=仓库路径不存在"
+
+        now = datetime.now()
+        h = now.hour
+
+        # 时间推断：餐型
+        if 11 <= h < 14:
+            meal = "午餐"
+        elif 17 <= h < 20:
+            meal = "晚餐"
+        else:
+            meal = "加餐"
+
+        ts = now.strftime("%Y-%m-%d %H:%M")
+        line = f"food {food}  # {meal}  # {ts}"
+        append_to_inbox(repo_path, line)
+
+        self._fire_sync(repo_path)
+
+        return f"FOOD_OK|food={food}|meal={meal}|time={ts}"
+
     @llm_tool(name="record_checkin")
     async def record_checkin(self, event: AstrMessageEvent,
                              energy: int, mood: int, anxiety: int,
