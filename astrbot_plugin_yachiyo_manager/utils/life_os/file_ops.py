@@ -1,4 +1,4 @@
-"""文件操作 — 读写 Futureplan 数据仓库的 markdown 文件 + 异步 git 同步"""
+"""文件操作 — 读写 LifeOS 数据仓库的 markdown 文件 + 异步 git 同步"""
 import asyncio
 import os
 from datetime import datetime
@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def ensure_repo_path(config: dict) -> str:
-    """从插件配置中获取 Futureplan 仓库路径。"""
+    """从插件配置中获取 LifeOS 仓库路径。"""
     path = config.get("futureplan_repo_path", "/data/Futureplan")
     if not os.path.isdir(path):
         raise FileNotFoundError(f"Futureplan 仓库路径不存在: {path}")
@@ -73,9 +73,9 @@ def append_expense(repo_path: str, amount: float, category: str, desc: str):
 
 def _category_emoji(cat: str) -> str:
     mapping = {
-        "餐饮": "🍜", "交通": "🚇", "购物": "🛒",
-        "娱乐": "🎮", "健康": "💊", "副业成本": "🔧",
-        "其他": "🎁",
+        "餐饮": "🍜", "住房": "🏠", "水电": "💡", "交通": "🚇",
+        "购物": "🛒", "娱乐": "🎮", "副业成本": "🔧", "健康": "💊",
+        "储蓄": "💰", "收入": "💵", "学习": "✍️", "其他": "🎁",
     }
     return mapping.get(cat, "")
 

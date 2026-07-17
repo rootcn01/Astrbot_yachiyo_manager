@@ -24,7 +24,7 @@ def parse_expense_table(content: str) -> list[dict]:
             entries.append({
                 "date_str": parts[1],
                 "amount": float(parts[2]),
-                "category": parts[4].lstrip("🍜🏠💡🚇🛒🎮🔧💊💰💵✍️🎁"),
+                "category": re.sub(r'^[🍜🏠💡🚇🛒🎮🔧💊💰💵✍️🎁]+', '', parts[4]),
                 "desc": parts[5],
             })
         except (ValueError, IndexError):
