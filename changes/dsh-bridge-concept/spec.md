@@ -168,5 +168,5 @@ P1 只做深任务档；快问 `/dsq`、进度心跳 = P2；信源标注 `[A/B/C
 | 会话降级/撞号修复 | ✅ | 修复后无复发 |
 
 **未测项（低优先）**：非 owner 触发拒（冒烟⑧）、wall-clock 超时（冒烟⑩）、单飞锁显式并发测试。
-**头号未解运维问题**：AstrBot 神秘全量插件热重载已 4 次（00:10/00:17/00:21/00:25，触发源未定位，疑面板操作），每次腰斩进行中任务——对账推送兜底有效，但需下窗排查触发源。
-**P2 债**：bwrap+seccomp=unconfined+/dsh_workspace bind 同次 recreate 切回 workspace-write（ADR-007）；快问档/心跳；yachiyo-web tasks 视图；SDK 真续接（盘恢复）。
+**「神秘重启」已定性（00:50 排查毕）**：四次（23:52/00:10/00:17/00:21）均为**整容器外部手动重启**，非插件热重载——证据：RestartCount=0（手动重启不计入）、OOMKilled=false、无内存限制、宿主无 OOM、cron 无匹配、无 watchtower/healthcheck。时间窗与用户测试期重合，高度疑似任务静默期的人工操作（待用户确认）。**工程响应：进度心跳从 P2 提级 P1.5**——深度任务 2-4 分钟静默无反馈看起来像挂死，是重启行为的直接诱因；实现=run 期间并发任务每 ~75s 推「⏳ #id 仍在跑（已 X 分钟）」，约 20 行。另：僵尸 runtime 检查零泄漏（容器内仅 AstrBot 本体 441MB，所有 close 真杀子进程）。
+**P2 债**：bwrap+seccomp=unconfined+/dsh_workspace bind 同次 recreate 切回 workspace-write（ADR-007）；快问档；yachiyo-web tasks 视图；SDK 真续接（盘恢复）。
