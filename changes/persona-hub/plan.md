@@ -35,6 +35,13 @@
     - **livingmemory**：注入法 `user_message_before`→**`extra_user_content`**（不污染对话历史+不破坏 provider 前缀缓存）；遗忘清理 30d→**90d**（人格连续性）；`use_session_filtering`→**false**（跨会话召回：私聊记忆可在群被召回；隐私依赖 70 防线+亲友群场景，可一键回改）。其余（full_group_capture/top_k 5/反思10轮/graph 全默认）维持。
 11. **⚠️ 两个运维配方（实测）**：①**cmd_config 在容器运行时改盘会被停机存档覆盖**（SIGTERM 优雅退出把内存配置写回盘）——核心配置改动必须 **stop→edit→start**；dashboard API 程序化登录被 PBKDF2 密码升级挡死（明文字段为空），别再试。插件配置无停机保存，改盘+重启即生效。②livingmemory 主库实为**空库**（documents=0；「8 条旧记忆」只在旧 schema 备份里且已被日清物理删除，前报有误）——记忆从零积累；7-18 有 embedding FreeTierOnly 写入失败史，09-19 实测 key 可出向量，**首次反思后查 memory_write_ops 有无新 failed**（观察项）。
 
+12. **✅ W2.6 修复轮（09-19 01:46，用户指令）**：
+    - **deepseek-v4-flash → deepseek-flash 全链路改名**：官方模型列表已无 v4-flash（仅 deepseek-flash/deepseek-v4-pro），改名具时效性。落点：provider 条目（id+model）、fallback 链、manager planning_provider_id、livingmemory llm_provider_id、angel_heart analyzer_model；停机改法一次完成，重启验证 `Loading model openai_chat_completion(deepseek/deepseek-flash)` 无残留。
+    - **KB 修复（病根三层）**：①init 失败史（provider 引用错位）已于 00:36 修；②**FAISS 索引是 4 月 22 日旧 embedding 空间的向量**——4 月后所有语义检索都是跨空间静默垃圾，且 description 里的 `{RAG_CONTENT}` 模板在核心零引用=纯装饰。处置：铸 JWT（见下）→ API 删旧三档 → 上传新档全量重嵌入 → description 换真描述。**终态=3 档 39 chunks（World_Rules 16 + TL_h1 10 + TL_h2 13）当前模型 qwen3.7-text-embedding 嵌入**。③怪病记录：**Timeline_Bonds.md 整份上传在 storage 段确定性失败**（insert_batch 报「写入知识库索引时出错」，底层异常被 raise-from 吞掉；改名无效、清场串行重试无效、二分两半均一次过）——16-chunk 组合触雷待上游解释，接受两半形态（内容完整、检索等效），AstrBot 升级后可重试整份。
+    - **协议 v2（1894 字重落）**：60-scenarios 核心区从「字面标记」（[月读常识]/[回忆涌现]，管线里根本没人发这些标记）改为**机制描述**：KB 检索结果=月读常识、英文 `HISTORICAL MEMORY REFERENCE` 块（livingmemory 实际格式）=过去记忆、`[关于神明]`（manager 实发）=用户了解。三信号全部对齐真实管线。
+    - **JWT 铸钥配方（新运维武器）**：dashboard 的 kb/system 权限不在 API key 开放集（ALL_OPEN_API_SCOPES 无 kb/system，403 在验 key 前就抛）；但 `jwt_secret` 明文在 cmd_config——容器内用 pyjwt 铸 HS256 `{'username':'lotuscn'}` 即等价 WebUI 登录态（scopes=['*']），Bearer 头直接用。用后即删。
+    - 观察记录：用户已自行安装 astrbot_plugin_mimo_tts_clone v0.7.2 且 **QQ 私聊语音发送实测成功**（D 轨用户自推，微信侧投递待验）。
+
 ## 2. 架构（原稿 + 编译分发）
 
 

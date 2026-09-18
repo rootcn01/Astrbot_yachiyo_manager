@@ -1,11 +1,11 @@
 {
   "version": "v2026.09.19",
-  "built_at": "2026-09-19T01:08:48",
+  "built_at": "2026-09-19T01:42:31",
   "source": "persona/",
   "targets": {
     "native_persona_protocol.md": {
-      "chars": 1841,
-      "sha256_16": "e5f2078cd4299e6d"
+      "chars": 1894,
+      "sha256_16": "3e00adb0e8ce2222"
     },
     "analyzer_identity.txt": {
       "chars": 431,
