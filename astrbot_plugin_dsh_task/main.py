@@ -306,9 +306,21 @@ class DshTaskPlugin(Star):
                 from deepseek_harness_sdk import DeepSeekHarness   # 兜底：包名改名时再试项目名
             home = PLUGIN_DIR / "data" / "plugin_data" / "dsh_task" / "dsh_home"
             home.mkdir(parents=True, exist_ok=True)
+            # 容器内无 bwrap 且 userns 被 docker seccomp 拦 → confined bash 无后端可用。
+            # 用权限预设放行 bash（默认 danger-full-access：无内层沙箱、审批=never）。
+            # 边界回到 v0.4 威胁模型：容器隔离 + owner + 单飞 + wall-clock + 宪法（软）。
+            # P2：容器装 bubblewrap + seccomp=unconfined 后切回 workspace-write（ADR-007）。
+            preset = self.config.get("permission_preset", "danger-full-access")
+            patch = home / "permission.patch.yml"
+            patch.write_text(
+                '- id: "@deepseek-ai/dsh-permission-presets"\n'
+                f'  config:\n    defaultPreset: {preset}\n',
+                encoding="utf-8",
+            )
             kwargs = dict(
                 cwd=str(self._ws),
                 dsh_home=str(home),
+                patches=(str(patch),),
                 base_url=self.config["base_url"],
                 api_key=self.config["api_key"],
                 model=self.config["model"],

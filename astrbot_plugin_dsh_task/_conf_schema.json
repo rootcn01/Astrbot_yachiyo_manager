@@ -53,6 +53,12 @@
     "desc": "单请求 max_tokens（SDK 默认 256000 会超百炼上限被 400）",
     "hint": "百炼 qwen3.8 系上限 131072；换模型时按端点文档调。"
   },
+  "permission_preset": {
+    "type": "string",
+    "default": "danger-full-access",
+    "desc": "dsh 权限预设（workspace-write=内层沙箱需 bwrap，本容器装不了；danger-full-access=无内层沙箱+审批never）",
+    "hint": "bash 可用性靠它。P2 容器配 bubblewrap+seccomp 后切回 workspace-write（ADR-007）。"
+  },
   "task_wallclock_minutes": {
     "type": "int",
     "default": 15,
