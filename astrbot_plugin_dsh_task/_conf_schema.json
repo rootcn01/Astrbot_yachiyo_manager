@@ -47,6 +47,12 @@
     "desc": "单轮请求上限（SDK request_timeout_seconds）",
     "hint": "单轮；多轮长跑由任务级硬上限兜底。"
   },
+  "max_tokens": {
+    "type": "int",
+    "default": 131072,
+    "desc": "单请求 max_tokens（SDK 默认 256000 会超百炼上限被 400）",
+    "hint": "百炼 qwen3.8 系上限 131072；换模型时按端点文档调。"
+  },
   "task_wallclock_minutes": {
     "type": "int",
     "default": 15,

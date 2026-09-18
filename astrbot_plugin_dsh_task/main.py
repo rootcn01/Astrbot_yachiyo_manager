@@ -279,6 +279,19 @@ class DshTaskPlugin(Star):
                                           "可 /dsh reset 后重试。")
                     await self._tasklog(f"FAIL | {tid} | {type(e).__name__}: {str(e)[:120]}")
                     return
+            finish = getattr(result, "finish_reason", None)
+            if finish == "error" or not final:
+                err = ""
+                for ev in reversed(getattr(result, "events", None) or []):
+                    s = str(ev)
+                    if "'kind': 'error'" in s:
+                        err = s[:300]
+                        break
+                async with self._lock:
+                    await self._kill_runtime()
+                await self._send(umo, f"❌ #{tid} agent 轮次失败（finish={finish or 'none'}）：{err or '无输出'}")
+                await self._tasklog(f"FAIL | {tid} | agent-error: {finish} | {err[:100]}")
+                return
             await self._send(umo, self._format_result(tid, time.time() - t0, final))
             await self._tasklog(f"DONE | {tid} | {int(time.time() - t0)}s | out:{len(final)}ch")
         finally:
@@ -299,6 +312,7 @@ class DshTaskPlugin(Star):
                 base_url=self.config["base_url"],
                 api_key=self.config["api_key"],
                 model=self.config["model"],
+                max_tokens=int(self.config.get("max_tokens", 131072)),   # SDK 默认 256k，百炼上限 131072，不压会 400
                 request_timeout_seconds=int(self.config.get("request_timeout_seconds", 600)),
                 initialize_timeout_seconds=60,
             )
