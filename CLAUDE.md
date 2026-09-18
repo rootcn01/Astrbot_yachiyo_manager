@@ -37,6 +37,7 @@ _server_snapshot_*/ angel_heart 服务器快照（不进 git）
 - angel_heart 的 `ai_self_identity`/`reply_strategy_guide` 只喂秘书分析器，主对话模型看不到。
 - 秘书的 reply_strategy 私聊到不了主模型（decision 恒 None）；策略枚举见 `persona/out/strategy_guide.txt`。
 - 分工：静态协议=原生人格 / 动态上下文=manager / 世界观=KB / 决策=angel_heart / 主动=proactive_chat。
+- **运行时开关现状（2026-09-19）**：livingmemory 已启用（8 条旧记忆找回）；**angel_heart 仍停用**（07-18 批量禁用误伤，启用与否待用户拍板，见 plan.md §1.5-7）；KB embedding 引用已修复（qwen3.7-text-embedding，key 未过期）。
 
 ## 与外部的关系
 

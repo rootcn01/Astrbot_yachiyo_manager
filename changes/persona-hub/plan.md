@@ -24,6 +24,9 @@
 4. **angel_heart 钉版确认**：本地 0.9.0 市场安装（无 .git、mtime 06-27），上游已到 2.1.2；dashboard 只有手动 update 端点、crontab/systemd 无自动更新——钉版安全，但未来升级=大迁移（0.9→2.x），须整跑冒烟。
 5. **dsh_task 冒烟通过**：hello.md 已产出、TASKLOG 全 DONE、sidecar 18234 在跑；已知瑕疵=容器重启后任务 ID 回卷（dsh 线自己处理）。当晚 9 次容器重启均为 dsh 开发迭代——W2 部署前与 dsh 线确认无进行中任务。
 6. **部署端点确认**：KB 现代路由 `/api/v1/knowledge-bases/{kb_id}/documents`（POST 上传 / DELETE 文档；**无文档内容更新端点**，更新=delete+re-upload）；dashboard :6185；proactive 群聊破冰 prompt 全文已取回（占位符 {{current_time}}/{{unanswered_count}}，与 persona/out/proactive_pack.md 口径一致）。
+7. **⚠️ angel_heart 同样处于停用**（09-19 追查）：禁用名单 `preferences.inactivated_plugins`（2026-07-18 16:29 批量操作）含 angel_heart + livingmemory；同批 self_learning/outputpro/spectrecore 为已卸载插件的僵尸条目。即 **07-18 起运行时没有秘书决策/上下文接管/scene_prompt，八千代在「原生协议+manager 截断块」裸管线上跑了两个月**。§1.1–1.3 与 §2 中关于 angel_heart 的结论是源码级真相，当前运行时未激活；其两个人格 config 字段现为惰性。**启用与否=用户拍板项**（影响：群回复时机行为变化、每条群消息多一次秘书 LLM 调用、上下文接管与 manager/livingmemory 注入的相互作用）。
+8. **✅ 已处置（09-19 00:36）**：①KB embedding 引用修正 `text-embedding-v3 → qwen3.7-text-embedding`（kb.db UPDATE；**旧 key 实测未过期**，无需换 dsh key；用户点名的 tongyi-embedding-vision-plus-2026-03-06 该账号 404 不存在；账号在列向量模型=qwen3.7-text-embedding(+flash)，1024 维）②livingmemory 摘出禁用名单并重启生效：Provider 第 3 次重试就绪、衰减调度找回 **8 条 7 月前旧记忆**（记忆库存活）③重启前后备份：`backups/data_v4.20260919-003603.bak`、`backups/kb.20260919-003603.bak`（容器内路径）。angel_heart 保持停用待拍板。dsh 侧 0919-04 任务于重启前 DONE，零中断。
+9. **W2.5 模型定案**：`qwen3.8-max`（09-19 用户改定，原 glm-5.2 提名作废；账号 models 列表确认存在，另有 qwen3.8-max-0902 日期版）。
 
 ## 2. 架构（原稿 + 编译分发）
 
@@ -83,7 +86,7 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 - **D 声音轨（独立插空）**：参考音频 → MiMo 克隆验证 → 投递路径（原生 provider 音色字段 vs 薄插件）→ 按场景 TTS 策略。
 - 快赢（可先行）：[:800] 修复随 W2；703030437/703030473 QQ 号核对；manager README 重写；reminder_tools.py 死代码清理。
 
-**用户拍板记录**：①原生人格纳为第 7 靶位承静态协议（否决存根化）②W2.5 走百炼、复用 dsh key、模型由执行席定（glm-5.2，依据=此前调研"写作口碑偏 GLM"）③台词库扩写政策未决（现库仅原作溯源条目，W3 前需拍板）。
+**用户拍板记录**：①原生人格纳为第 7 靶位承静态协议（否决存根化）②W2.5 模型=**百炼 qwen3.8-max**（09-19 改定，glm-5.2 提名作废；复用 dsh 百炼 key 口径）③livingmemory「有用就启动」授权已执行（09-19 00:36 启用成功，8 条旧记忆找回）④台词库扩写政策未决（现库仅原作溯源条目，W3 前需拍板）⑤**新增待拍板：angel_heart 是否重新启用**（07-18 起停用，详见 §1.5-7）。
 
 ## 6. 风险登记
 
@@ -91,3 +94,5 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 - WebUI 手改部署面 → 与编译产物漂移：manifest sha256 对账 + 修后再编译（不手改）。
 - 私聊策略路由缺失是 angel_heart 设计使然，非 bug；补丁方案进 backlog（改 front_desk 私聊链路取决策），W3 不做。
 - proactive/proactive_history 的占位符（{{current_time}} 等）在 W2 合入时必须原样保留。
+- **KeyError 'type'**：每次启动 provider.manager:283 报一次（全史 15 次，先于本次改动存在）——某个 provider 条目缺 type 字段，W2 顺手定位修复（备份在案，与人格线无耦合）。
+- livingmemory 重启后 8 条旧记忆已找回，但其向量索引是旧模型产物；W2 若换 embedding 模型需触发其 index rebuild（其配置有 migration/rebuild 开关）。
