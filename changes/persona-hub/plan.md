@@ -28,6 +28,13 @@
 8. **✅ 已处置（09-19 00:36）**：①KB embedding 引用修正 `text-embedding-v3 → qwen3.7-text-embedding`（kb.db UPDATE；**旧 key 实测未过期**，无需换 dsh key；用户点名的 tongyi-embedding-vision-plus-2026-03-06 该账号 404 不存在；账号在列向量模型=qwen3.7-text-embedding(+flash)，1024 维）②livingmemory 摘出禁用名单并重启生效：Provider 第 3 次重试就绪、衰减调度找回 **8 条 7 月前旧记忆**（记忆库存活）③重启前后备份：`backups/data_v4.20260919-003603.bak`、`backups/kb.20260919-003603.bak`（容器内路径）。angel_heart 保持停用待拍板。dsh 侧 0919-04 任务于重启前 DONE，零中断。
 9. **W2.5 模型定案**：`qwen3.8-max`（09-19 用户改定，原 glm-5.2 提名作废；账号 models 列表确认存在，另有 qwen3.8-max-0902 日期版）。
 
+10. **✅ 参数调优轮（09-19 01:0x，用户授权执行席定参；研究代理产出语义依据；备份 `backups/*.20260919-005941.bak`）**：
+    - **分段回复**（cmd_config `platform_settings.segmented_reply`）：enable=true / only_llm_result=true / **threshold=400** / random 1.5-3.5s。阈值语义与直觉相反（**≤阈值才切分**，超过整发），400=几乎所有人格回复可按标点切条、超长深谈文整发。
+    - **proactive_chat**：私聊主动消息**从上线起就是死配置**（friend session_list 为空、群 session `default:` 前缀匹配不上任何真实 UMO）。已修：friend session=owner UMO（weixin_personal_lotus:FriendMessage:o9cq…@im.wechat）+ auto_trigger 开（插件重启后60分钟无私聊则补种任务）+ 间隔 240-900min 均匀随机 + 连发 2 条未回复即停（原4）+ 免打扰 1-7 维持；群 session=`yachiyo:GroupMessage:853409824`。TTS 维持语音+文本双发。
+    - **sowing_discord**：目标群号 `703030437`→**`703030473`**（会话库 190 条消息实锤真群号，原号从未存在=每转发必失败一次）；夜间冷却 0→3600s（防凌晨背靠背搬史）；白天 600s 维持。语义注记：该插件是按表情回应评价筛选的**跨群搬史机**（forward_group_single_msg 原样转发），不是拟态插件。
+    - **livingmemory**：注入法 `user_message_before`→**`extra_user_content`**（不污染对话历史+不破坏 provider 前缀缓存）；遗忘清理 30d→**90d**（人格连续性）；`use_session_filtering`→**false**（跨会话召回：私聊记忆可在群被召回；隐私依赖 70 防线+亲友群场景，可一键回改）。其余（full_group_capture/top_k 5/反思10轮/graph 全默认）维持。
+11. **⚠️ 两个运维配方（实测）**：①**cmd_config 在容器运行时改盘会被停机存档覆盖**（SIGTERM 优雅退出把内存配置写回盘）——核心配置改动必须 **stop→edit→start**；dashboard API 程序化登录被 PBKDF2 密码升级挡死（明文字段为空），别再试。插件配置无停机保存，改盘+重启即生效。②livingmemory 主库实为**空库**（documents=0；「8 条旧记忆」只在旧 schema 备份里且已被日清物理删除，前报有误）——记忆从零积累；7-18 有 embedding FreeTierOnly 写入失败史，09-19 实测 key 可出向量，**首次反思后查 memory_write_ops 有无新 failed**（观察项）。
+
 ## 2. 架构（原稿 + 编译分发）
 
 
@@ -64,7 +71,7 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 | manager 代码（截断修复+动态化+守卫） | build_zip.py → WebUI 上传 → 插件 reload | 旧 zip 留档（yachiyo_plugin_v2.3.zip） |
 | 模型切换（W2.5 独立窗） | WebUI provider_settings.default_provider_id → 阿里百炼/glm-5.2（fallback 不动 deepseek 系）+ modalities 核对 | 切回 ds-v4-flash |
 
-部署顺序：先快照全靶位 → manager 代码 → 原生人格 → angel_heart/KB/proactive → 冒烟。**dsh 冒烟期间不 restart 容器**；热生效性逐项验证（W1 取证），需 restart 的项目与 dsh 排期错开。
+部署顺序：先快照全靶位 → manager 代码 → 原生人格 → angel_heart/KB/proactive → 冒烟。**dsh 冒烟期间不 restart 容器**；热生效性已验证（§1.5-11）：插件配置改盘+重启即生效；**cmd_config 必须停机改**（运行时改盘会被停机存档覆盖）；DB 类（persona/kb/preferences）运行时可改、重启后生效。
 
 ## 4. 冒烟清单（W2 收工门）
 
@@ -80,13 +87,14 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 
 - **W1（本窗，2026-09-19）**：persona/ 八模块 + build_persona.py v1（27/27 自检绿）+ 本方案档 + CLAUDE.md 刷新 + angel_heart 快照（_server_snapshot_2026-09-18/，不进 git）+ 服务器取证（system_prompt 实序 / livingmemory 存活 / angel_heart 钉 0.9.0 / dsh 冒烟态 / 部署面端点）。
 - **W2 部署窗**：manager 硬编码清理（[:800]/:37/:51/:54→引用红线矩阵）+ PersonaBuilder 降级纯动态 + 非默认人格守卫 + 七靶位落盘 + 回滚包 + 冒烟。
-- **W2.5 模型窗（独立，A 冒烟通过后）**：默认 provider → 阿里百炼/glm-5.2（复用 dsh 的百炼 key 口径；fallback 留 deepseek 系）；modalities 配置核对；QQ 通道金丝雀 → 微信。
+- **W2.5 模型窗（独立，A 冒烟通过后）**：默认 provider → 阿里百炼/qwen3.8-max（复用 dsh 的百炼 key 口径；fallback 留 deepseek 系）；modalities 配置核对；QQ 通道金丝雀 → 微信。
+- **W-AH angel_heart 实验窗（W2/W2.5 稳定后，用户 09-19 批准）**：先只放开一个 QQ 群当金丝雀（其 access_control.whitelist 现成）→ 观察三判据：①插话时机质量 ②与 manager/livingmemory 注入的运行时相互作用（源码级顺序已推演，运行时首次实测）③秘书调用量（每条群消息一次 flash 调用）→ 通过则保留并激活其两个编译靶位（analyzer_identity/strategy_guide），失败则永久停用（终态成立：@驱动+主动破冰，人格栈依然完整）。回退=单开关。
 - **W3 表达窗（B 降级版）**：台词库运行时选区（关系×场景，替换式非叠加）；策略枚举→群聊风格路由；私聊不依赖策略标签。
 - **W4 记忆窗（C）**：set_pinned_fact/set_nickname 工具；livingmemory 写接口前置验证（不通则记 user_state）；三轨注入前缀声明。
 - **D 声音轨（独立插空）**：参考音频 → MiMo 克隆验证 → 投递路径（原生 provider 音色字段 vs 薄插件）→ 按场景 TTS 策略。
 - 快赢（可先行）：[:800] 修复随 W2；703030437/703030473 QQ 号核对；manager README 重写；reminder_tools.py 死代码清理。
 
-**用户拍板记录**：①原生人格纳为第 7 靶位承静态协议（否决存根化）②W2.5 模型=**百炼 qwen3.8-max**（09-19 改定，glm-5.2 提名作废；复用 dsh 百炼 key 口径）③livingmemory「有用就启动」授权已执行（09-19 00:36 启用成功，8 条旧记忆找回）④台词库扩写政策未决（现库仅原作溯源条目，W3 前需拍板）⑤**新增待拍板：angel_heart 是否重新启用**（07-18 起停用，详见 §1.5-7）。
+**用户拍板记录**：①原生人格纳为第 7 靶位承静态协议（否决存根化）②W2.5 模型=**百炼 qwen3.8-max**（09-19 改定，glm-5.2 提名作废；复用 dsh 百炼 key 口径）③livingmemory「有用就启动」授权已执行（09-19 00:36 启用成功，8 条旧记忆找回）④台词库扩写政策未决（现库仅原作溯源条目，W3 前需拍板）⑤**angel_heart 路线批准（09-19）**：保持停用 → W2/W2.5 后按 W-AH 实验窗流程决定去留 ⑥**插件参数调优授权（09-19）**：执行席按需调到最优值，不熟悉的领域可开子代理研究。
 
 ## 6. 风险登记
 
@@ -96,3 +104,5 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 - proactive/proactive_history 的占位符（{{current_time}} 等）在 W2 合入时必须原样保留。
 - **KeyError 'type'**：每次启动 provider.manager:283 报一次（全史 15 次，先于本次改动存在）——某个 provider 条目缺 type 字段，W2 顺手定位修复（备份在案，与人格线无耦合）。
 - livingmemory 重启后 8 条旧记忆已找回，但其向量索引是旧模型产物；W2 若换 embedding 模型需触发其 index rebuild（其配置有 migration/rebuild 开关）。
+- **napcat HTTP API 未监听**（09-19 实测：宿主/容器内 localhost:3000 均拒绝连接）→ manager 的 QQ 群 TTS（send_group_ai_record）与 napcat 直推通道实为静默死配置；需在 napcat 侧开启 HTTP server 或从 manager 移除该依赖（快赢候选）。
+- QQ 号悬案 `703030437/703030473` 机器验尸失败（platform_message_history 空表——group_icl 关着没记历史；napcat API 不通）→ 转用户人工确认。
