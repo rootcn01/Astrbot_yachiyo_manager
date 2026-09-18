@@ -284,7 +284,10 @@ class DshTaskPlugin(Star):
 
     async def _ensure_harness(self):
         if self._harness is None:
-            from deepseek_harness_sdk import DeepSeekHarness   # 懒导入：依赖未装时插件仍可加载
+            try:
+                from deepseek_harness import DeepSeekHarness   # PyPI 项目名是 deepseek-harness-sdk，导入名是 deepseek_harness
+            except ImportError:
+                from deepseek_harness_sdk import DeepSeekHarness   # 兜底：包名改名时再试项目名
             home = PLUGIN_DIR / "data" / "plugin_data" / "dsh_task" / "dsh_home"
             home.mkdir(parents=True, exist_ok=True)
             kwargs = dict(
