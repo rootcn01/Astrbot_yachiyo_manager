@@ -9,3 +9,10 @@ build/
 venv/
 .env
 .DS_Store
+
+# OAuth token (contains refresh_token = account password)
+**/token.json
+**/credentials.json
+
+# angel_heart 服务器源码快照（本地工作材料，不进库）
+_server_snapshot_*/

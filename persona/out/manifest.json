@@ -1,0 +1,35 @@
+{
+  "version": "v2026.09.19",
+  "built_at": "2026-09-19T00:23:45",
+  "source": "persona/",
+  "targets": {
+    "native_persona_protocol.md": {
+      "chars": 1841,
+      "sha256_16": "e5f2078cd4299e6d"
+    },
+    "analyzer_identity.txt": {
+      "chars": 431,
+      "sha256_16": "e5272d002f96f526"
+    },
+    "strategy_guide.txt": {
+      "chars": 163,
+      "sha256_16": "21b37e9f2cae1f7b"
+    },
+    "kb/World_Rules.md": {
+      "chars": 3307,
+      "sha256_16": "39c8e6a132bb6a88"
+    },
+    "kb/Timeline_Bonds.md": {
+      "chars": 4153,
+      "sha256_16": "f085138d1707dd57"
+    },
+    "proactive_pack.md": {
+      "chars": 1237,
+      "sha256_16": "7b8b1d15684e157f"
+    },
+    "planner_prompts.txt": {
+      "chars": 555,
+      "sha256_16": "365dc48ec45ad68b"
+    }
+  }
+}

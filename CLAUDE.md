@@ -1,83 +1,52 @@
-# CLAUDE.md — 月见八千代 AstrBot 插件
+# CLAUDE.md — 月见八千代人格中枢仓
 
-> 版本：v2.3.0 | 最后更新：2026-06-28
+> 版本：v3.0（人格中枢纪元） | 最后更新：2026-09-19
+> 定稿方案与路线图：[changes/persona-hub/plan.md](changes/persona-hub/plan.md) ← 动手前必读
 
 ## 项目定位
 
-这是 Futureplan LifeOS 的移动端接入层。八千代通过微信提供自然语言记账/灵感/待办/汇报/查询。深度处理由 Claude Code 桌面端完成。
+两层：
+1. **八千代人格中枢**——`persona/` 八模块是人格唯一原稿，`build_persona.py` 是唯一分发通道，编译产物进 `persona/out/` 部署到 AstrBot 各靶位。
+2. **LifeOS 移动端接入层**——`astrbot_plugin_yachiyo_manager` 插件（记账/汇报/提醒/任务工具），深度处理由 Claude Code 桌面端完成。
 
-## 关键架构
+## 铁律（人格线）
 
-- 工具注册：`@llm_tool`（AstrBot 全局，所有聊天流可用）
-- 数据源：`/data/Futureplan/` markdown 文件
-- git 同步：每次写后 fire-and-forget push
-- 身份安全：`_is_owner()` gate
+- 改人格 = 只改 `persona/*.md` → 跑 `python build_persona.py`（27 项自检必须全绿）→ 产物经部署 runbook 落服务器。
+- **禁止手改部署面**：原生人格DB / angel_heart config / KB 文档 / proactive config。发现漂移 → 以 `persona/out/manifest.json` 的 sha256 对账 → 重新编译覆盖。
+- 字数红线只有一个出处：`10-voice.md` 的红线矩阵。任何代码/配置不得另立数字。
+- angel_heart 钉 0.9.0（快照在 `_server_snapshot_2026-09-18/`，不进 git）；升级前必须跑 plan.md §4 冒烟。
+- 台词库只收原作溯源条目（扩写政策未决，见 plan.md §5）。
 
-## v2.3.0 变更（2026-06-28）
+## 目录速览
 
-- `checkin.py`：`format_checkin_line()` +overtime 参数
-- `main.py`：`record_checkin()` +overtime 参数
-- `dashboard.py`：表格解析兼容新旧格式（8/9列）+ `extract_wfa()` + `extract_overtime_stats()`
-- `context.py`：上下文块 +加班统计 +WFA +加班周建议
-
----
-
-## 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
 ```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+persona/            人格八模块原稿（唯一编辑点）
+  out/              编译产物（进 git，部署审计用）
+build_persona.py    编译器（persona → 七靶位）
+astrbot_plugin_yachiyo_manager/  管理插件（工具层+动态注入层）
+astrbot_plugin_dsh_task/         dsh 任务桥插件（独立线，见 changes/dsh-bridge-concept/）
+changes/            方案档（persona-hub / dsh-bridge-concept）
+source_docs/        原作语料（小说/设定集/公式书）
+output_md/          人格产物旧版（v2.3 时代；已被 persona/ 取代，留档）
+_server_snapshot_*/ angel_heart 服务器快照（不进 git）
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+## 关键架构事实（对抗审查钉死，勿再错）
 
----
+- AstrBot `on_llm_request` 优先级**降序**：manager(100) 先于 angel_heart(50/0)。最终 system_prompt = 原生人格协议 → manager 动态块 → angel_heart scene_prompt。
+- angel_heart 的 `ai_self_identity`/`reply_strategy_guide` 只喂秘书分析器，主对话模型看不到。
+- 秘书的 reply_strategy 私聊到不了主模型（decision 恒 None）；策略枚举见 `persona/out/strategy_guide.txt`。
+- 分工：静态协议=原生人格 / 动态上下文=manager / 世界观=KB / 决策=angel_heart / 主动=proactive_chat。
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+## 与外部的关系
+
+- **dev-hub**（../dev-hub）：功能开发走其专业链（spec→plan→tasks→实现→验证→对抗审查→标准回写）；微型改动逃生舱同其定义。
+- **LifeOS**（../LifeOS）：本仓不 import 人生规则；manager 的 LifeOS 数据块只在 owner 私聊注入。
+- **服务器**：110.40.182.106，容器 astrbot-astrbot-1；dsh 冒烟期等计划任务在跑时**不 restart 容器**，用插件 reload。
+
+## 四条工程原则（沿用 v2.3）
+
+1. **Think Before Coding**——不假设；多种解读摆出来；有更简单的做法就说。
+2. **Simplicity First**——最小实现；不做投机性抽象。
+3. **Surgical Changes**——只动该动的；不"顺手改"无关代码。
+4. **Goal-Driven Execution**——先定可验证成功标准；改人格=自检全绿+冒烟清单，改代码=测试先行。
