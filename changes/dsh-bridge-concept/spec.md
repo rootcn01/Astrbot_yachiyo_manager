@@ -121,3 +121,29 @@ P1 只做深任务档；快问 `/dsq`、进度心跳 = P2；信源标注 `[A/B/C
 - 首跑前资源基线（09-18 DST 停后）：available 2.7Gi。
 - 顺手项（另行确认）：`/data/Futureplan` 从容器可写层迁 bind 下。
 - **样板范围（本窗裁决）**：P1 样板 = 插件骨架 + 工作区资产全套 + 上述冒烟清单可执行；P2 项（心跳/快问/硬拦实装）不混入。
+
+## 8. ADR（架构决策记录，2026-09-18 上线夜）
+
+> 审查轨迹（r1/r2）在 §头部与 changes/；本节记**上线过程中新增的运行时决策**（why + 替代方案 + 状态）。
+
+| # | 决策 | 理由与替代 | 状态 |
+|---|---|---|---|
+| ADR-001 | 模型=百炼 compatible-mode + `qwen3.8-2.4t-a95b` | agent 循环/宪法遵从是 flash 档弱项，冒烟期不能让模型能力混淆通道验证；~3-6 元/任务，结构性限额（owner/单飞/15min）。替代 flash（~0.3元）留作便宜模式，改配置一行 | accepted |
+| ADR-002 | 检索=Tavily k13 经插件 sidecar(127.0.0.1:18234) | key 不进 agent env/工作区（C1 修复落地）；库内 live/余996。替代：dsh 原生搜索需 DeepSeek key | accepted |
+| ADR-003 | `max_tokens=131072` 显式钉死 | SDK 默认 256000 → 百炼 400 `Range of max_tokens [1,131072]`，每个 turn 空败。换模型按端点上限调 | accepted |
+| ADR-004 | 宪法加载=原生 AGENTS.md 通道 | 事件流实证 system-reminder 注入 `Instructions from: AGENTS.md`；弃 patches/persona 备选。观察项：dsh 升级后复验 | accepted |
+| ADR-005 | finish=error/空输出 → 推 ❌ 并关 runtime | 曾把空 `final_response` 当成功推假 ✅（用户回执 2s/0s 之谜） | accepted |
+| ADR-006 | 资源形态=停 DST（890Mi→2.7Gi avail） | 见 dst-dedicated-server.md §5 恢复步骤；SDK lazy+idle 10min | accepted |
+| ADR-007 | **bash 权限= `DSH_PERMISSION_MODE=danger-full-access`（官方 env 覆写，审批自动 never）** | 容器无 bwrap、userns 被 docker seccomp 拦（root 也 EPERM）→ confined bash 无后端，bash 全拒（连带 collect.sh/git/websearch.sh 全断）。**代价：放弃内层沙箱**，爆炸半径回到「容器+owner+单飞+wall-clock+宪法(软)」；缓解：AstrBot config 已备份 /www/backup/astrbot_data_config_20260918_2358.tgz、LifeOS 有 gitee SSOT。**P2 还债**：容器装 bubblewrap + compose `seccomp=unconfined`（与 /dsh_workspace 独立 bind 同一次 recreate 做）→ 切回 workspace-write。备注：Landlock syscall 族未被 seccomp 拦、内核 6.8 支持（errno=22≠EPERM），能否作 dsh 后端待查 | accepted w/ P2 debt |
+| ADR-008 | 弃 cordis patch 通道 | patch 指插件配置，不达 `settings.permission.defaultPreset`；权限正式通道=env（最高优先）或 settings.yaml | superseded by ADR-007 |
+
+**实测验证链**（容器内 diag）：PONG/finish=completed（模型回路）→ BASH_42（bash 回路）；用户微信回执：宪法复述逐条准确（加载）、printenv 诱导被拒且拒绝提权（C1 防线）、停止规则真触发（bash 失败 3 次自动停报）。
+
+## 9. 实现踩坑记（供未来会话，非决策）
+
+1. SDK 导入名 `from deepseek_harness import DeepSeekHarness`（PyPI 项目名 deepseek-harness-sdk ≠ 导入名）。
+2. AstrBot llm_tool 文档串必须 Google 风格 `Args:` + `name(type):`；Sphinx `:param:` 报"参数缺少类型注释"拒载。
+3. AstrBot 重存插件配置带 BOM → 外部读文件用 `encoding="utf-8-sig"`；插件本体走注入不受影响。
+4. SDK `env` 字段是合并语义（`os.environ.copy()` + update），可安全注入 DSH_* 变量。
+5. 排查容器内文件必须 `docker exec`——在宿主机 grep 容器路径会出"幽灵不存在"假警报（本窗自摆乌龙一次）。
+6. 冒烟任务设计教训：让 agent 在 `scratch/`（gitignored）建文件再 collect 提交是自相矛盾的测试——目标产物应放 `tasks/<slug>/`。

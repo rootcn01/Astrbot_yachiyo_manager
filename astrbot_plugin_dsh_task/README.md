@@ -29,6 +29,7 @@ workspace_assets/     首次运行物化到工作区的脚手架：
 
 ## 已知边界（诚实清单）
 
-- 宪法/preflight/collect 是软约束（prompt+脚本级），硬边界只有容器隔离+owner+单飞+wall-clock；dsh `workspace-write` sandbox 实测是 P1 冒烟项（可用则升级为硬层）。
-- 模型 api_key 必然进 harness 子进程 env（SDK 机制）——已接受残余风险，用独立 key 缓解（§5.3/§5.4）。
+- **bash 经 `DSH_PERMISSION_MODE=danger-full-access` 放行（ADR-007）**：容器装不了 bubblewrap、userns 被 seccomp 拦，内层沙箱已放弃；硬边界=容器隔离+owner+单飞+wall-clock，宪法/preflight/collect 是软约束。P2 换 bwrap+seccomp=unconfined 后切回 workspace-write。AstrBot config 备份在 /www/backup/。
+- 模型 api_key 必然进 harness 子进程 env（SDK 机制）——已接受残余风险，独立 key 缓解（§5.3/§5.4）。
 - dsh 是 developer preview，接口会破坏性变更：requirements 锁版本，出问题禁用本插件即回滚，八千代不受影响。
+- ADR 与踩坑记录：`../dsh-plugin-design-2026-09-18.md` §8/§9。
