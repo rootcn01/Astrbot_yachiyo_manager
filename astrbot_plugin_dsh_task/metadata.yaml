@@ -1,0 +1,6 @@
+name: astrbot_plugin_dsh_task
+display_name: DSH 任务执行器
+desc: owner 专用的 dsh 深度任务通道——微信/QQ 下发任务，容器内 DeepSeek Harness agent 执行，异步回推结果。方案见仓库 dsh-plugin-design-2026-09-18.md
+author: Lotus
+version: 0.1.0
+astrbot_version: ">=4.0.0"

@@ -1,0 +1,68 @@
+{
+  "base_url": {
+    "type": "string",
+    "default": "",
+    "desc": "模型端点 base_url（OpenAI 兼容）",
+    "hint": "例如百炼 compatible-mode 端点。必填，留空时插件只挂载不受理任务。"
+  },
+  "api_key": {
+    "type": "string",
+    "default": "",
+    "desc": "模型端点 API Key（用独立 key，勿与八千代共用）",
+    "hint": "必填。只存 AstrBot 插件配置，不落 agent 工作区；泄露时单独轮换（方案 §5.4）。"
+  },
+  "model": {
+    "type": "string",
+    "default": "",
+    "desc": "模型 ID",
+    "hint": "按端点填，例如 qwen 系列具体型号。必填。"
+  },
+  "provider": {
+    "type": "string",
+    "default": "",
+    "desc": "dsh provider ID（可选）",
+    "hint": "一般留空走默认；SDK 冒烟时如构造需要 provider 再填。"
+  },
+  "tavily_api_key": {
+    "type": "string",
+    "default": "",
+    "desc": "Tavily 检索密钥（sidecar 持有，不进 agent 环境/工作区）",
+    "hint": "填了则启动 127.0.0.1 sidecar 供 scripts/websearch.sh 使用；不填则 agent 无联网检索（方案 §5.2/§5.3）。"
+  },
+  "workspace_path": {
+    "type": "string",
+    "default": "/AstrBot/data/dsh_workspace",
+    "desc": "agent 工作区根目录",
+    "hint": "样板期默认 /AstrBot/data 下；正式部署按方案 §5.3 挂独立 bind 后改为 /dsh_workspace（远离 AstrBot 配置与聊天记忆）。"
+  },
+  "sidecar_port": {
+    "type": "int",
+    "default": 18234,
+    "desc": "Tavily sidecar 本机端口（只绑 127.0.0.1）",
+    "hint": "容器内回环地址，不对外暴露。"
+  },
+  "request_timeout_seconds": {
+    "type": "int",
+    "default": 600,
+    "desc": "单轮请求上限（SDK request_timeout_seconds）",
+    "hint": "单轮；多轮长跑由任务级硬上限兜底。"
+  },
+  "task_wallclock_minutes": {
+    "type": "int",
+    "default": 15,
+    "desc": "任务级硬上限（分钟）",
+    "hint": "超时→中断→关闭 runtime→回推错误（方案 B2，桥的职责）。"
+  },
+  "idle_close_minutes": {
+    "type": "int",
+    "default": 10,
+    "desc": "空闲几分钟后关闭 runtime（0=常驻）",
+    "hint": "关闭释放内存，下次任务重新拉起（约 25s 热启开销）。"
+  },
+  "max_result_chars": {
+    "type": "int",
+    "default": 3000,
+    "desc": "回推结果截断阈值（字符）",
+    "hint": "超出截断并标注，全文在工作区产物文件里。"
+  }
+}
