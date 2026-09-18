@@ -1,0 +1,11 @@
+# 密钥与声音样本不进 git
+api_key.txt
+reference.*
+candidates/
+outputs/
+server_backup/
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.aac
