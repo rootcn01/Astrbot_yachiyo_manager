@@ -86,7 +86,7 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 ## 5. 路线图与决策记录
 
 - **W1（本窗，2026-09-19）**：persona/ 八模块 + build_persona.py v1（27/27 自检绿）+ 本方案档 + CLAUDE.md 刷新 + angel_heart 快照（_server_snapshot_2026-09-18/，不进 git）+ 服务器取证（system_prompt 实序 / livingmemory 存活 / angel_heart 钉 0.9.0 / dsh 冒烟态 / 部署面端点）。
-- **W2 部署窗**：manager 硬编码清理（[:800]/:37/:51/:54→引用红线矩阵）+ PersonaBuilder 降级纯动态 + 非默认人格守卫 + 七靶位落盘 + 回滚包 + 冒烟。
+- **W2 部署窗（✅ 2026-09-19 01:20 完成并验证）**：manager v2.4.0（纯动态注入层，对抗审查 APPROVE-WITH-FIXES 三条 must-fix 已落）+ 七靶位中五靶位落盘——原生人格DB（1841字带编译戳）、angel_heart 两字段（惰性）、proactive 三段、planner 两常量（随插件）；**KB 文档替换延后**（旧文档=同源语料，价值低；用户可随时 WebUI 手动上传 persona/out/kb/*.md 或提供面板 API key 后脚本化）。persona_pool 收缩为 ['月见八千代']（停机改）。备份：`backups/*.20260919-011924.w2bak` + `yachiyo_manager.20260919-011924.tar.gz`。**验证证据**：部署后 01:20 用户真实消息（QQ私聊"晚上好"）回复含口癖"锵～☆"+神明大人+第三人称自称+凌晨时段上下文+世界观私有梗"松饼"（KB agentic 检索命中信号）+字数合规；容器内 pytest 3 passed；persona_mgr 3 personas 正常。遗留观察：meme_manager 报 `minimax/MiniMax-M2.7-highspeed` provider 不存在（先天配置悬空，非本窗引入）；KeyError 'type' 定位=provider_sources 机制条目无 type 字段（化妆级，模型可用，不修核心）。
 - **W2.5 模型窗（独立，A 冒烟通过后）**：默认 provider → 阿里百炼/qwen3.8-max（复用 dsh 的百炼 key 口径；fallback 留 deepseek 系）；modalities 配置核对；QQ 通道金丝雀 → 微信。
 - **W-AH angel_heart 实验窗（W2/W2.5 稳定后，用户 09-19 批准）**：先只放开一个 QQ 群当金丝雀（其 access_control.whitelist 现成）→ 观察三判据：①插话时机质量 ②与 manager/livingmemory 注入的运行时相互作用（源码级顺序已推演，运行时首次实测）③秘书调用量（每条群消息一次 flash 调用）→ 通过则保留并激活其两个编译靶位（analyzer_identity/strategy_guide），失败则永久停用（终态成立：@驱动+主动破冰，人格栈依然完整）。回退=单开关。
 - **W3 表达窗（B 降级版）**：台词库运行时选区（关系×场景，替换式非叠加）；策略枚举→群聊风格路由；私聊不依赖策略标签。
