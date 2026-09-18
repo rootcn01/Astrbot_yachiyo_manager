@@ -276,15 +276,34 @@ class DshTaskPlugin(Star):
         await self._save_sessions()
         return s
 
+    def _start_heartbeat(self, tid: str, umo: str, t0: float):
+        """P1.5：深度任务静默期心跳——消除「像挂死」的观感（00:50 排查定性后的工程响应）。"""
+        interval = int(self.config.get("heartbeat_seconds", 75))
+        if interval <= 0:
+            return None
+
+        async def _beat():
+            try:
+                while True:
+                    await asyncio.sleep(interval)
+                    mins = int((time.time() - t0) / 60)
+                    await self._send(umo, f"⏳ #{tid} 仍在跑（已 {mins} 分钟）· 完成后回推，期间可正常聊天")
+            except asyncio.CancelledError:
+                pass
+
+        return asyncio.create_task(_beat())
+
     async def _worker(self, tid: str, umo: str, task: str, sess: dict):
         wall = int(self.config.get("task_wallclock_minutes", 15)) * 60
         t0 = time.time()
         degraded = False
+        beat = None
         try:
             async with self._lock:
                 self._cancel_idle()
                 try:
                     h = await self._ensure_harness()
+                    beat = self._start_heartbeat(tid, umo, t0)
                     try:
                         result = await asyncio.wait_for(
                             asyncio.to_thread(h.run, task, session_id=sess["session_id"]),
@@ -330,6 +349,8 @@ class DshTaskPlugin(Star):
             await self._send(umo, self._format_result(tid, time.time() - t0, final) + note)
             await self._tasklog(f"DONE | {tid} | {int(time.time() - t0)}s | out:{len(final)}ch" + (" | session-rotated" if degraded else ""))
         finally:
+            if beat is not None:
+                beat.cancel()
             self._current = None
             self._arm_idle()
 

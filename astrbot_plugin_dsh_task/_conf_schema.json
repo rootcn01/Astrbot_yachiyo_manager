@@ -65,6 +65,12 @@
     "desc": "任务级硬上限（分钟）",
     "hint": "超时→中断→关闭 runtime→回推错误（方案 B2，桥的职责）。"
   },
+  "heartbeat_seconds": {
+    "type": "int",
+    "default": 75,
+    "desc": "任务静默期心跳间隔（秒）；0=关闭",
+    "hint": "跑长任务时每隔此间隔推「⏳ 仍在跑」，防止静默期像挂死被误重启。"
+  },
   "idle_close_minutes": {
     "type": "int",
     "default": 10,
