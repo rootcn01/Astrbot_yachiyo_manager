@@ -42,6 +42,8 @@
     - **JWT 铸钥配方（新运维武器）**：dashboard 的 kb/system 权限不在 API key 开放集（ALL_OPEN_API_SCOPES 无 kb/system，403 在验 key 前就抛）；但 `jwt_secret` 明文在 cmd_config——容器内用 pyjwt 铸 HS256 `{'username':'lotuscn'}` 即等价 WebUI 登录态（scopes=['*']），Bearer 头直接用。用后即删。
     - 观察记录：用户已自行安装 astrbot_plugin_mimo_tts_clone v0.7.2 且 **QQ 私聊语音发送实测成功**（D 轨用户自推，微信侧投递待验）。
 
+13. **📋 三窗方案规划轮（09-19 深夜 ZCode，产出待拍板）**：W-AH/W3/W4 结构化方案落盘 [wah-w3-w4-plans-2026-09-19.md](wah-w3-w4-plans-2026-09-19.md)（v2=对抗修订版）。对抗审查 REQUEST-CHANGES 4H/4M/6L 全部修订纳入，最重四条：①**angel_heart 白名单非全局门**（只挡非@消息与上下文接管；全群 @消息 +analyzer 调用、strip_markdown 含私聊全局生效、扣押机制密集连@可吞回复）②config 实名字段=whitelist_enabled(默认False)+chat_ids，**alias 默认 "AngelHeart" 不设即污染实验效度** ③**关系计数生产死代码**：_update_user_interaction 全插件仅创建提醒一个调用点，W3 选区上线即近失效，须前置修活（inject_persona 注入路径+节流落盘）④「persona_pool 切人格守卫」在 manager v2.4.0 不存在（§4-3 声称的守卫未落实；persona_pool 已收缩为单人故 moot，记 §6）。另证：**build_persona.py 自检实数 36 项**（运行时 36/36 全绿+产物幂等；此前 27/34 口径均过时，CLAUDE.md 已同步）；台词库 2 条跨区重复（2165/2189），三区全开=19 唯一句。排程建议：W-AH 先启动（挂历观察期 3-7 天）→W3 编码重叠→D3 拍板与部署压后；W4 的 livingmemory 写接口验证插观察期内并行。方案档 §5 八项决策点等用户拍板。
+
 ## 2. 架构（原稿 + 编译分发）
 
 
@@ -54,7 +56,7 @@ persona/40-timeline.md      时间线羁绊（公开/绝密两层）→ KB 全�
 persona/50-relations.md     关系分层态度（五级关系映射）
 persona/60-scenarios.md     场景策略（群聊/私聊/深谈/主动/早晚push/任务/深夜/月读常识使用）
 persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私）
-        │ build_persona.py（唯一人格分发通道，27 项自检，exit 1 on fail）
+        │ build_persona.py（唯一人格分发通道，36 项自检，exit 1 on fail）
         ▼ persona/out/
 1. native_persona_protocol.md → 原生人格DB「月见八千代」：静态协议（1803字：身份+语言指纹+关系+常识使用+防线+台词采样+boot）
 2. analyzer_identity.txt      → angel_heart ai_self_identity：「月读观测子系统」包装+身份摘要（不含演出指令）
@@ -114,3 +116,6 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 - livingmemory 重启后 8 条旧记忆已找回，但其向量索引是旧模型产物；W2 若换 embedding 模型需触发其 index rebuild（其配置有 migration/rebuild 开关）。
 - **napcat HTTP API 未监听**（09-19 实测：宿主/容器内 localhost:3000 均拒绝连接）→ manager 的 QQ 群 TTS（send_group_ai_record）与 napcat 直推通道实为静默死配置；需在 napcat 侧开启 HTTP server 或从 manager 移除该依赖（快赢候选）。
 - QQ 号悬案 `703030437/703030473` 机器验尸失败（platform_message_history 空表——group_icl 关着没记历史；napcat API 不通）→ 转用户人工确认。
+- **manager v2.4.0 无「persona_pool 切人格守卫」**（09-19 三窗规划轮对抗核实）：§4-3 声称的新守卫从未实现，grep 全插件零引用；persona_pool 已收缩为 ['月见八千代'] 单人故当前 moot——若未来重开多人格池须补守卫。
+- **关系计数生产死代码**（09-19 对抗核实）：_update_user_interaction 仅创建提醒一个调用点，interaction_count/relationship/mood 生产中几乎不动——W3 选区机制的生效前提，修法=W3 范围内 inject_persona 注入路径计数+节流落盘（方案档 §2.2-D0）。
+- **angel_heart 启用的真实爆炸半径**（09-19 快照取证，详方案档 §1.2）：白名单只挡非@消息与上下文接管，全群 @消息 +analyzer 调用；strip_markdown 含私聊全局生效（回复第二副本入 ledger）；扣押机制密集连@可吞回复；alias 默认 "AngelHeart" 须改设。

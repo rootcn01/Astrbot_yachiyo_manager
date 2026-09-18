@@ -11,7 +11,7 @@
 
 ## 铁律（人格线）
 
-- 改人格 = 只改 `persona/*.md` → 跑 `python build_persona.py`（27 项自检必须全绿）→ 产物经部署 runbook 落服务器。
+- 改人格 = 只改 `persona/*.md` → 跑 `python build_persona.py`（36 项自检必须全绿）→ 产物经部署 runbook 落服务器。
 - **禁止手改部署面**：原生人格DB / angel_heart config / KB 文档 / proactive config。发现漂移 → 以 `persona/out/manifest.json` 的 sha256 对账 → 重新编译覆盖。
 - 字数红线只有一个出处：`10-voice.md` 的红线矩阵。任何代码/配置不得另立数字。
 - angel_heart 钉 0.9.0（快照在 `_server_snapshot_2026-09-18/`，不进 git）；升级前必须跑 plan.md §4 冒烟。
