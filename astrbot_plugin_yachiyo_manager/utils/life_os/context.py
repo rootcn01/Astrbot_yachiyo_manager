@@ -14,7 +14,7 @@ from .expense import (
 
 
 class LifeOSContext:
-    """读取 Futureplan 数据仓库，构建注入 LLM 的上下文块。"""
+    """读取 LifeOS 数据仓库，构建注入 LLM 的上下文块。"""
 
     def __init__(self, config: dict):
         self.config = config
@@ -165,6 +165,8 @@ class LifeOSContext:
         lines.append("可用工具（用户每次发消息时 LLM 都能调用）：")
         lines.append("  · 用户说花了钱/买东西 → record_expense(amount, description, category)")
         lines.append("  · 用户说要做/记得/别忘了/灵感/设定 → record_note(content, note_type)")
+        lines.append("  · 用户问今天有什么事/待办/活动 -> list_tasks(date)")
+        lines.append("  · 用户说做完了/完成了X/搞定X -> complete_task(task_title)")
         lines.append("  · 用户汇报精力/情绪/焦虑/状态 → record_checkin(energy, mood, anxiety, ...)")
         lines.append("  · 用户问计划/安排/本周/预算/趋势 → get_status()")
         lines.append("  · 用户问欠款/债务/还欠多少 → get_debt()")

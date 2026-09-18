@@ -1,6 +1,6 @@
 {
   "version": "v2026.09.19",
-  "built_at": "2026-09-19T00:23:45",
+  "built_at": "2026-09-19T01:08:48",
   "source": "persona/",
   "targets": {
     "native_persona_protocol.md": {
@@ -24,12 +24,12 @@
       "sha256_16": "f085138d1707dd57"
     },
     "proactive_pack.md": {
-      "chars": 1237,
-      "sha256_16": "7b8b1d15684e157f"
+      "chars": 1231,
+      "sha256_16": "efd79e7889a10d49"
     },
     "planner_prompts.txt": {
-      "chars": 555,
-      "sha256_16": "365dc48ec45ad68b"
+      "chars": 559,
+      "sha256_16": "5840a7fbab72c42b"
     }
   }
 }

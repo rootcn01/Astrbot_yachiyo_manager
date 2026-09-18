@@ -3,8 +3,14 @@
     "type": "string",
     "default": "normal",
     "desc": "默认提醒类型",
-    "options": ["normal", "urgent"],
-    "labels": ["温柔提醒 (normal)", "紧急提醒+语音 (urgent)"],
+    "options": [
+      "normal",
+      "urgent"
+    ],
+    "labels": [
+      "温柔提醒 (normal)",
+      "紧急提醒+语音 (urgent)"
+    ],
     "hint": "normal = 到时间发一条温柔文字提醒。urgent = QQ群聊发TTS语音，其他平台发三次文字提醒"
   },
   "normal_message_template": {
@@ -35,7 +41,7 @@
     "type": "bool",
     "default": true,
     "desc": "启用八千代角色人格",
-    "hint": "开启后AI会以月见八千代的身份和语气回复。关闭则用默认AI身份。"
+    "hint": "关闭=不注入动态上下文与 LifeOS 上下文（原生人格协议仍生效，八千代身份不变）"
   },
   "qq_whitelist_enabled": {
     "type": "bool",
@@ -48,5 +54,61 @@
     "default": "/data/Futureplan",
     "desc": "Futureplan 数据仓库路径",
     "hint": "Git clone 的 Futureplan 数据仓库绝对路径。插件通过此路径读写 dashboard.md、inbox.md、finance/ 等文件。"
+  },
+  "proactive_push_enabled": {
+    "type": "bool",
+    "default": true,
+    "desc": "主动 push 总开关",
+    "hint": "开启后早晚定时主动 push 规划/复盘。关闭则 ProactiveScheduler 不启动（紧急关闭用）。"
+  },
+  "chronotype": {
+    "type": "string",
+    "default": "night_heavy",
+    "desc": "节律阶段（映射 push 时机）",
+    "options": [
+      "night_heavy",
+      "normal"
+    ],
+    "labels": [
+      "夜型重度（3-4睡中午醒）",
+      "正常节律（8醒12睡）"
+    ],
+    "hint": "night_heavy=13:00早push/23:00晚push；normal=08:00早push/22:00晚push。作息漂移时改此项，时机自动跟。"
+  },
+  "planning_provider_id": {
+    "type": "string",
+    "default": "",
+    "desc": "规划用 LLM provider ID",
+    "hint": "AstrBot WebUI 里配置的 provider ID（填 DS v4 的 id）。空则主动 push 跳过+告警。解耦聊天默认 provider。"
+  },
+  "google_tasks_enabled": {
+    "type": "bool",
+    "default": false,
+    "desc": "启用 Google Tasks 待办同步",
+    "hint": "开启后 record_note 的 todo 写入 Google Tasks（非 inbox）。需先在 data/plugin_data/yachiyo_manager/ 放 token.json（本地 OAuth 授权后复制）。关闭则 todo 仍写 inbox。"
+  },
+  "google_calendar_enabled": {
+    "type": "bool",
+    "default": false,
+    "desc": "启用 Google Calendar 活动拉取",
+    "hint": "开启后 morning push 注入今日 Calendar 活动 + get_status 今日活动段读 Calendar。需 token.json。"
+  },
+  "default_task_list": {
+    "type": "string",
+    "default": "@default",
+    "desc": "默认 Google Tasks list ID",
+    "hint": "新建 task 默认进此 list。@default 为 Google Tasks 默认列表。多 list 时填 list ID。"
+  },
+  "google_calendar_id": {
+    "type": "string",
+    "default": "primary",
+    "desc": "默认 Google Calendar ID",
+    "hint": "拉取活动的日历 ID。primary 为主日历。"
+  },
+  "google_oauth_proxy": {
+    "type": "string",
+    "default": "http://127.0.0.1:7890",
+    "desc": "OAuth 刷新走代理（oauth2.googleapis.com 国内不可达）",
+    "hint": "oauth2.googleapis.com 被墙，token 刷新需走代理。填 mihomo/clash 的 mixed-port，如 http://127.0.0.1:7890。tasks/calendar API 直连不需代理。留空则直连（会刷新失败）。"
   }
 }

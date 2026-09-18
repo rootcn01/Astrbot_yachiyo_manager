@@ -9,15 +9,16 @@ from astrbot.api.star import Star, Context
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult, MessageChain
 from astrbot.api import logger
 from astrbot.api.event.filter import on_llm_request
-from astrbot.core.provider.entities import ProviderRequest
-from astrbot.core.agent.tool import ToolSet
 from astrbot.api import llm_tool
 
+from .utils.google_integration import GoogleIntegration
 from .utils.persona_builder import PersonaBuilder
 from .utils.reminder_manager import ReminderManager
 from .utils.platform_adapter import PlatformAdapter
 from .utils.napcat_client import NapCatClient
 from .utils.life_os import LifeOSContext
+from .utils.life_os.planner import generate_plan
+from .utils.proactive_scheduler import ProactiveScheduler
 from .utils.life_os.owner_gate import is_owner
 from .utils.life_os.file_ops import (
     ensure_repo_path, read_file, append_to_inbox, append_expense, sync_git,
@@ -45,12 +46,13 @@ class YachiyoManager(Star):
         )
         self.reminder_manager = ReminderManager(self)
 
-        plugin_dir = Path(__file__).parent
         self.persona_builder = PersonaBuilder(
-            persona_enabled=self.config.get("persona_enabled", True),
-            plugin_dir=plugin_dir
+            persona_enabled=self.config.get("persona_enabled", True)
         )
         self.life_os = LifeOSContext(self.config)
+        self.proactive_scheduler = ProactiveScheduler(self)
+        self.google = GoogleIntegration(self.config)
+        self._last_owner_umo = None
 
         self._user_cache: dict[str, dict] = {}
         self._whitelist: dict = None
@@ -64,6 +66,8 @@ class YachiyoManager(Star):
                                                   default={"qq": [], "wechat": []})
         await self._migrate_old_data()
         await self.reminder_manager.restore_all()
+        await self.proactive_scheduler.start()
+        await self.google.initialize()
         logger.info("八千代插件激活完成")
 
     async def terminate(self):
@@ -71,7 +75,9 @@ class YachiyoManager(Star):
         for task in list(self.reminder_manager.tasks.values()):
             task.cancel()
         self.reminder_manager.tasks.clear()
+        self.proactive_scheduler.cancel_all()
         logger.info("八千代插件已终止，所有提醒任务已取消")
+        await self.google.close()
         await self.napcat.close()
 
     async def _migrate_old_data(self):
@@ -206,18 +212,30 @@ class YachiyoManager(Star):
 
         # auto 推断类型
         if note_type == "auto":
+            knowledge_keywords = ["kb", "知识", "学到", "了解一下", "查一下"]
             idea_keywords = ["设定", "世界观", "角色", "故事", "创意", "灵感",
                            "设计", "构思", "点子", "想法", "施法", "魔法",
                            "精灵", "种族", "能力", "剧情", "世界观"]
             todo_keywords = ["记得", "别忘了", "要做", "提醒我", "回电话",
                            "交", "买", "去", "约了", "开会", "打卡"]
             content_lower = content.lower()
-            if any(kw in content for kw in idea_keywords):
+            if any(kw in content for kw in knowledge_keywords):
+                note_type = "kb"
+            elif any(kw in content for kw in idea_keywords):
                 note_type = "idea"
             elif any(kw in content for kw in todo_keywords):
                 note_type = "todo"
             else:
                 note_type = "todo"  # 默认当待办
+
+        # todo -> Google Tasks（含降级），其他类型（idea/kb/food）写 inbox
+        if note_type == "todo" and self.google.enabled:
+            result = await self._create_gtask_with_fallback(content, repo_path)
+            if result["ok"]:
+                return (f"TASK_OK|title={content[:100]}|list={result.get('list', '@default')}"
+                        f"|task_id={result.get('task_id', '')[:12]}")
+            return (f"TASK_FALLBACK|title={content[:100]}|reason={result['reason']}"
+                    f"|stored=inbox（八千代恢复后迁移）")
 
         ts = datetime.now().strftime("%Y-%m-%d %H:%M")
         line = f"{note_type} {content}  # {ts}"
@@ -338,12 +356,40 @@ class YachiyoManager(Star):
 
         parts = ["STATUS_OK"]
 
-        # 1. 今日计划
-        plan = extract_today_plan(dashboard_md)
-        if plan and len(plan) > 20:
+        # 1. 今日计划（Google Tasks due today + Calendar 活动；未启用则回退 dashboard）
+        if self.google.enabled:
+            from datetime import date as _date, timedelta
+            target = _date.today()
+            day_start = f"{target.isoformat()}T00:00:00+08:00"
+            day_end = f"{(target + timedelta(days=1)).isoformat()}T00:00:00+08:00"
+            tasklists = await self.google.list_tasklists()
+            all_tasks = []
+            for tl in tasklists:
+                tl_tasks = await self.google.list_tasks(list_id=tl["id"], showCompleted=False)
+                for t in tl_tasks:
+                    all_tasks.append((tl.get("title", ""), t))
+            all_tasks.sort(key=lambda x: x[1].get("due") or "9999")
             parts.append("")
-            parts.append("--- 今日计划 ---")
-            parts.append(plan)
+            parts.append(f"--- 待办（{len(all_tasks)}）---")
+            for list_name, t in all_tasks:
+                due = t.get("due", "")
+                due_str = due[:10] if due else "无日期"
+                parts.append(f"  • [{list_name}] {t.get('title', '?')} (due:{due_str})")
+            if self.config.get("google_calendar_enabled"):
+                cal_id = self.config.get("google_calendar_id", "primary")
+                events = await self.google.list_events(
+                    calendar_id=cal_id, timeMin=day_start, timeMax=day_end,
+                    singleEvents=True, orderBy="startTime", maxResults=20)
+                parts.append(f"--- 今日活动（{len(events)}）---")
+                for e in events:
+                    st = (e.get("start", {}).get("dateTime") or e.get("start", {}).get("date") or "")
+                    parts.append(f"  • {st[11:16] if len(st) >= 16 else ''} {e.get('summary', '?')}")
+        else:
+            plan = extract_today_plan(dashboard_md)
+            if plan and len(plan) > 20:
+                parts.append("")
+                parts.append("--- 今日计划 ---")
+                parts.append(plan)
 
         # 2. 本周快照
         if dashboard_md:
@@ -484,13 +530,135 @@ class YachiyoManager(Star):
         await self.reminder_manager.cancel(r["task_id"])
         return f"REMINDER_CANCEL_OK|msg={r['message']}"
 
+    # ── Google Tasks / Calendar ──
+
+    async def _create_gtask_with_fallback(self, content: str, repo_path: str) -> dict:
+        """创建 Google Task，失败重试 3 次（指数退避），仍失败降级写 inbox。
+
+        降级策略见 pipeline/2026-07-17-google-tasks-calendar-sync-plan.md §6.6。
+        """
+        list_id = self.config.get("default_task_list", "@default")
+        for attempt in range(3):
+            result = await self.google.insert_task(content, list_id=list_id)
+            if result:
+                return {"ok": True, "list": list_id, "task_id": result.get("id", "")}
+            await asyncio.sleep(2 ** attempt)  # 1s / 2s / 4s
+        # 3 次失败 -> 降级写 inbox（保留 todo 格式 + 待迁移标记）
+        try:
+            ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+            append_to_inbox(repo_path, f"todo {content}  # {ts}  # Google失败待迁移")
+            self._fire_sync(repo_path)
+        except Exception as e:
+            logger.error(f"Google Task 降级写 inbox 也失败: {e}")
+        return {"ok": False, "reason": "Google API 3次重试失败，已暂存 inbox"}
+
+    @llm_tool(name="list_tasks")
+    async def list_tasks(self, event: AstrMessageEvent, date: str = "") -> str:
+        """查看待办和活动。当用户问今天有什么事/今日任务/今天安排/待办/活动时调用。
+
+        Args:
+            date(string): 日期 YYYY-MM-DD，空=今天
+        """
+        if not self._is_owner(event):
+            return "OWNER_ONLY"
+        if not self.google.enabled:
+            return "TASKS_DISABLED|reason=Google 集成未启用"
+
+        from datetime import date as _date, timedelta
+        try:
+            target = datetime.strptime(date, "%Y-%m-%d").date() if date else _date.today()
+        except ValueError:
+            return "TASKS_ERROR|reason=日期格式应为 YYYY-MM-DD"
+
+        day_start = f"{target.isoformat()}T00:00:00+08:00"
+        day_end = f"{(target + timedelta(days=1)).isoformat()}T00:00:00+08:00"
+        parts = [f"TASKS_OK|date={target.isoformat()}"]
+
+        # 待办（Tasks due 当天，未完成）
+        tasklists = await self.google.list_tasklists()
+        all_tasks = []
+        for tl in tasklists:
+            tl_tasks = await self.google.list_tasks(list_id=tl["id"], showCompleted=False)
+            for t in tl_tasks:
+                all_tasks.append((tl.get("title", ""), t))
+        all_tasks.sort(key=lambda x: x[1].get("due") or "9999")
+        parts.append(f"--- 待办（{len(all_tasks)}）---")
+        for list_name, t in all_tasks:
+            due = t.get("due", "")
+            due_str = due[:10] if due else "无日期"
+            parts.append(f"  • [{list_name}] {t.get('title', '?')} (due:{due_str})")
+
+        # 活动（Calendar 当天）
+        if self.config.get("google_calendar_enabled"):
+            cal_id = self.config.get("google_calendar_id", "primary")
+            events = await self.google.list_events(
+                calendar_id=cal_id, timeMin=day_start, timeMax=day_end,
+                singleEvents=True, orderBy="startTime", maxResults=20,
+            )
+            parts.append(f"--- 活动（{len(events)}）---")
+            for e in events:
+                start = e.get("start", {})
+                st = start.get("dateTime") or start.get("date") or ""
+                hhmm = st[11:16] if len(st) >= 16 else ""
+                parts.append(f"  • {hhmm} {e.get('summary', '?')}")
+
+        return "\n".join(parts)
+
+    @llm_tool(name="complete_task")
+    async def complete_task(self, event: AstrMessageEvent, task_title: str = "") -> str:
+        """完成一个待办。当用户说做完了/完成了X/搞定X时调用。
+
+        Args:
+            task_title(string): 完成的任务标题关键词（模糊匹配）
+        """
+        if not self._is_owner(event):
+            return "OWNER_ONLY"
+        if not self.google.enabled:
+            return "TASKS_DISABLED"
+        if not task_title:
+            return "TASKS_ERROR|reason=请提供完成的任务标题"
+
+        # 拉所有 list 找匹配任务（complete 需要 list_id）
+        tasklists = await self.google.list_tasklists()
+        matched = []  # [(list_id, task)]
+        for tl in tasklists:
+            tl_tasks = await self.google.list_tasks(list_id=tl["id"], showCompleted=False)
+            for t in tl_tasks:
+                if task_title in (t.get("title") or ""):
+                    matched.append((tl["id"], t))
+        if not matched:
+            return f"TASK_NOT_FOUND|query={task_title}"
+        if len(matched) > 1:
+            lines = [f"TASK_AMBIGUOUS|count={len(matched)}|请更精确指定"]
+            for i, (lid, t) in enumerate(matched, 1):
+                lines.append(f"  {i}. {t.get('title', '?')} (id={t.get('id', '')[:8]})")
+            return "\n".join(lines)
+
+        list_id, task = matched[0]
+        ok = await self.google.complete_task(task["id"], list_id=list_id)
+        return f"TASK_DONE|ok={ok}|title={task.get('title', '')}"
+
     # ── 角色灵魂注入 ──
 
     @on_llm_request(priority=100)
-    async def inject_persona(self, event: AstrMessageEvent, req: ProviderRequest):
-        """LLM 请求前注入八千代角色上下文 + Life OS 数据。追加模式。"""
+    async def inject_persona(self, event: AstrMessageEvent, *args, **kwargs):
+        """LLM 请求前注入八千代角色上下文 + Life OS 数据。
+        v4.26.5 on_llm_request 传参变化（req 位置漂移），用 isinstance 从 args/kwargs 找 ProviderRequest。"""
         if not self.persona_builder.persona_enabled:
             return
+
+        # v4.26.5 适配：从 args/kwargs 找 ProviderRequest（req 位置可能漂移到 plugin）
+        from astrbot.api.provider import ProviderRequest
+        req = None
+        for a in args:
+            if isinstance(a, ProviderRequest):
+                req = a
+                break
+        if req is None:
+            req = kwargs.get("req")
+        if req is None:
+            logger.warning(f"inject_persona: 未找到 ProviderRequest，args 类型={[type(a).__name__ for a in args]}, kwargs keys={list(kwargs.keys())}")
+            return  # 没找到 ProviderRequest，跳过（不报错，工具列表不注入）
 
         try:
             user_id = self._get_user_id(event)
@@ -522,6 +690,11 @@ class YachiyoManager(Star):
             # Life OS 上下文（含主动建议）—— 仅对 owner 注入，防止隐私泄露
             if self._is_owner(event):
                 req.system_prompt += self.life_os.build_context_block()
+                # F8: 存 owner umo（变了才写，避免每请求写 KV）
+                umo = event.unified_msg_origin
+                if umo and umo != self._last_owner_umo:
+                    await self.put_kv_data("owner_umo", umo)
+                    self._last_owner_umo = umo
 
         except Exception as e:
             logger.error(f"Persona 注入失败: {e}")
@@ -653,6 +826,64 @@ class YachiyoManager(Star):
                     await asyncio.sleep(0.5)
                 if payload.get("platform") == "qq" and group_id:
                     logger.info("TTS 发送失败，已 fallback 到文字")
+
+    # ── 主动 push 执行 ──
+
+    async def _execute_proactive_push(self, push_type: str):
+        """主动 push 执行：pull 最新 -> 生成规划 -> push。由 ProactiveScheduler 调用。"""
+        try:
+            repo_path = ensure_repo_path(self.config)
+        except FileNotFoundError:
+            logger.warning("主动 push：仓库路径不存在")
+            return
+        await sync_git(repo_path)  # 定时 pull，解决数据滞后
+        owner_umo = await self.get_kv_data("owner_umo", default="")
+        if not owner_umo:
+            logger.warning("主动 push：owner_umo 未获取（需 owner 先交互一次）")
+            return
+        planning_provider_id = self.config.get("planning_provider_id", "")
+        plan = await generate_plan(self, repo_path, owner_umo, push_type, planning_provider_id)
+        if not plan:  # F6: None 守卫，不发 "None"
+            return
+        await self._send_text(owner_umo, plan)
+
+    @filter.command("yachiyo_test_plan")
+    async def cmd_test_plan(self, event: AstrMessageEvent,
+                            push_type: str = "morning") -> MessageEventResult:
+        """手动触发主动 push 测试。push_type: morning（早规划）/ evening（晚复盘）"""
+        if not self._is_owner(event):
+            yield event.plain_result("OWNER_ONLY")
+            return
+        try:
+            repo_path = ensure_repo_path(self.config)
+        except FileNotFoundError:
+            yield event.plain_result("仓库路径不存在")
+            return
+        planning_provider_id = self.config.get("planning_provider_id", "")
+        plan = await generate_plan(self, repo_path, event.unified_msg_origin,
+                                   push_type, planning_provider_id)
+        if not plan:
+            yield event.plain_result(
+                "生成失败：检查 planning_provider_id 是否配置 + LLM 调用日志"
+            )
+            return
+        yield event.plain_result(plan)
+
+    @filter.command("yachiyo_test_cron")
+    async def cmd_test_cron(self, event: AstrMessageEvent,
+                            *args, **kwargs) -> MessageEventResult:
+        """手动触发完整 cron push 链路（sync_git+owner_umo+_send_text），验证主动 push 不等 cron。"""
+        push_type = kwargs.get("push_type") or (args[0] if args else "morning")
+        if not self._is_owner(event):
+            yield event.plain_result("OWNER_ONLY")
+            return
+        owner_umo = await self.get_kv_data("owner_umo", default="")
+        if not owner_umo:
+            yield event.plain_result("owner_umo 未存：先和八千代普通对话一句（非命令），再试")
+            return
+        yield event.plain_result(f"触发 {push_type} 完整 cron 链路（sync_git+规划+push）...")
+        await self._execute_proactive_push(push_type)
+        yield event.plain_result("已触发。看微信是否收到 push + 查日志。")
 
     # ── 内部方法 ──
 

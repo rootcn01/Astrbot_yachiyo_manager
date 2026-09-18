@@ -1,133 +1,81 @@
 # astrbot_plugin_yachiyo_manager
 
-月见八千代管理插件 - 为 AstrBot 提供 FUSHI 定时提醒、多模态通知等专属功能。
+月见八千代管理插件 —— LifeOS 的移动端接入层。八千代通过微信/QQ 提供自然语言记账、汇报、待办、提醒、查询；深度处理由 Claude Code 桌面端完成。
 
-## 功能特性
+## 架构（v2.4 起）
 
-- **FUSHI 定时提醒** - 设置定时闹钟，支持普通提醒和紧急提醒两种模式
-- **多模态通知** - QQ 群聊支持 TTS 语音 + 文字双重提醒，私聊/微信 fallback 到文字轰炸
-- **白名单控制** - 支持 QQ/微信平台的白名单管理，管理员可动态添加/移除
-- **人格化消息** - 提醒内容符合月见八千代的角色语气（温柔但略带腹黑）
-- **可视化配置** - 支持 AstrBot 管理面板直接配置各项参数
+```
+静态人格协议 → AstrBot 原生人格「月见八千代」（data_v4.db，由 Yachiyo_Project/persona/ 编译分发）
+动态上下文   → 本插件 inject_persona（on_llm_request priority=100，追加式）
+               [场景](对应红线矩阵行) + [时间] + [关于神明](关系/心情/昵称/置顶事实)
+               + [回忆涌现](LTM 转投) + [约束]；owner 追加 [Life OS 上下文]
+世界观资料   → 知识库「Yachiyo_Project」（agentic 检索）
+工具层       → 10 个 @llm_tool（全局注册，默认聊天流可调用）
+```
+
+人格唯一编辑点 = 仓库根 `persona/` 八模块；`build_persona.py` 编译产出到 `persona/out/`；**本插件不再持有静态人格文本**（persona_builder 只做动态块）。
+
+## LLM 工具（@llm_tool，全局，共 10 个）
+
+| 工具 | 作用 | 权限 |
+|---|---|---|
+| `record_expense` | 记账 → LifeOS `finance/expense-log.md`，返回今日餐饮预算 | owner |
+| `record_note` | 待办→Google Tasks（失败降级 inbox）；灵感/知识→inbox.md | owner |
+| `record_food` | 记饮食，按时间推断餐型 → inbox | owner |
+| `record_checkin` | 每日状态汇报（精力/情绪/焦虑 1-10，BARS 锚点评分） | owner |
+| `get_status` | 今日计划+周统计+预算+复测日期总览 | owner |
+| `get_debt` | 债务清单（finance/CLAUDE.md 解析） | owner |
+| `set_reminder` / `cancel_reminder` | FUSHI 定时提醒（1-1440 分钟） | 白名单 |
+| `list_tasks` / `complete_task` | 查看某日待办+日历 / 模糊匹配完成任务 | owner |
+
+## 命令（确定性通道，不经 LLM）
+
+| 命令 | 描述 |
+|------|------|
+| `yachiyo_fushi_reminder <分钟> <内容> [normal\|urgent]` | FUSHI 闹钟（白名单） |
+| `yachiyo_cancel [task_id]` | 取消/列出提醒 |
+| `yachiyo_whitelist_add / _remove / _status` | QQ 白名单管理 |
+| `yachiyo_test_plan / _cron` | owner 手动触发早晚 push 链路（调试） |
 
 ## 目录结构
 
 ```
 astrbot_plugin_yachiyo_manager/
-├── __init__.py                    # 命名空间包声明
-├── main.py                        # Star 主类 + 命令/LLM handlers
-├── metadata.yaml                  # 插件元数据
-├── _conf_schema.json              # 可视化配置 schema
-├── requirements.txt               # 依赖声明
-├── core/
-│   └── persona_builder.py         # 角色 persona 构建（惰性加载 output_md/ 设定）
-├── tools/
-│   └── reminder_tools.py          # LLM 工具注册（set/cancel/list 提醒）
-├── output_md/                     # 角色设定文件（Yachiyo_Tone_FewShots.md 等）
+├── main.py                        # Star 主类：10 llm_tool + 7 命令 + inject_persona
+├── metadata.yaml / _conf_schema.json / requirements.txt
 ├── utils/
-│   ├── reminder_manager.py        # asyncio 调度 + KV Store 持久化 + 重启恢复
-│   ├── platform_adapter.py        # 平台适配器（QQ/微信）
-│   └── napcat_client.py           # NapCat API 客户端
-└── tests/
-    └── test_reminder.py           # 单元测试
+│   ├── persona_builder.py         # 纯动态上下文块（场景/时间/关系/记忆/约束）
+│   ├── reminder_manager.py        # asyncio 调度 + KV 持久化 + 重启恢复
+│   ├── platform_adapter.py        # QQ/微信平台判定
+│   ├── napcat_client.py           # NapCat HTTP 客户端（QQ TTS；需 napcat 开 HTTP）
+│   ├── proactive_scheduler.py     # 早晚 cron push（chronotype 映射）
+│   ├── google_integration.py      # Google Tasks/Calendar REST + OAuth 刷新
+│   └── life_os/                   # LifeOS 数据层：dashboard 解析/支出/汇报/规划/git 同步
+└── tests/test_reminder.py         # ReminderManager 单测
 ```
 
-## 命令列表
+## 配置要点
 
-| 命令 | 描述 | 参数 |
-|------|------|------|
-| `yachiyo_fushi_reminder` | 设定 FUSHI 闹钟 | `delay_minutes` - 延迟分钟数<br>`message` - 提醒内容<br>`alert_type` - 提醒类型 (normal/urgent) |
-| `yachiyo_cancel` | 取消提醒 | `task_id` - 任务ID（不填则列出全部） |
-| `yachiyo` | 自然语言对话入口 | `message` - 消息内容（如"5分钟后提醒我喝水"） |
-| `yachiyo_whitelist_add` | 添加白名单 | `qq_id` - QQ 号 |
-| `yachiyo_whitelist_remove` | 移除白名单 | `qq_id` - QQ 号 |
-| `yachiyo_whitelist_status` | 查看白名单状态 | - |
+| 配置项 | 说明 |
+|---|---|
+| `futureplan_repo_path` | LifeOS 仓库路径（默认 /AstrBot/data/Futureplan），写后 git 自动同步 |
+| `chronotype` | night_heavy → 早晚 push 13:00/23:00；normal → 08:00/22:00 |
+| `planning_provider_id` | 早晚规划用的 LLM provider |
+| `google_tasks_enabled / google_calendar_enabled` | Google 集成开关（OAuth token 在 data/plugin_data/yachiyo_manager/token.json） |
+| `napcat_api_url` | NapCat HTTP（napcat 未开 HTTP 时 QQ TTS 静默降级） |
 
-## 安装方式
+## 安装 / 更新
 
-1. 将 `astrbot_plugin_yachiyo_manager` 目录复制到 AstrBot 的 `data/plugins/` 目录下
-2. 在 AstrBot 管理面板中 Reload 插件
-3. 在管理面板中配置插件参数（ NapCat API 地址、人格化 Prompt 等）
-
-## 快速上手
-
-1. **添加白名单** — 在QQ私聊中发送：`/yachiyo_whitelist_add <你的QQ号>`
-2. **测试提醒** — 发送：`/yachiyo_fushi_reminder 1 喝水测试`
-3. **AI对话** — 发送：`/yachiyo 半小时后提醒我吃药`（需配置LLM）
-
-## 常见场景
-
-| 场景 | 命令 |
-|------|------|
-| 定时喝水 | `/yachiyo_fushi_reminder 30 该喝水了` |
-| 紧急会议提醒 | `/yachiyo_fushi_reminder 10 会议开始了 urgent` |
-| 午休叫醒 | `/yachiyo_fushi_reminder 30 午休结束 urgent` |
-| 自然语言 | `/yachiyo 20分钟后提醒我站起来活动` |
-| 查看提醒 | `/yachiyo_cancel`（不带参数=列出） |
-| 取消提醒 | `/yachiyo_cancel <任务ID前8位>` |
-
-## 配置说明
-
-| 配置项 | 类型 | 默认值 | 描述 |
-|--------|------|--------|------|
-| `default_alert_type` | 下拉 | normal | 默认提醒类型。normal=温柔文字，urgent=紧急TTS+文字 |
-| `normal_message_template` | 文本 | 【FUSHI 闹钟】... | 普通提醒模板，`{message}` 为内容占位符 |
-| `urgent_enhancement_template` | 文本 | 神明大人！... | 紧急提醒模板（TTS失败时使用） |
-| `napcat_api_url` | 文本 | http://localhost:3000 | NapCat HTTP 地址，云服务器需改为实际IP |
-| `napcat_api_token` | 文本 | (空) | NapCat 令牌，一般留空 |
-| `persona_enabled` | 开关 | true | 是否让AI以八千代身份回复 |
-| `qq_whitelist_enabled` | 开关 | true | 是否仅白名单QQ号可用 |
-
-## 使用示例
-
-```
-# 设置 5 分钟后提醒喝水（普通模式）
-/yachiyo_fushi_reminder 5 该喝水了 normal
-
-# 设置 10 分钟后提醒开会（紧急模式，QQ 群聊会发 TTS）
-/yachiyo_fushi_reminder 10 该开会了 urgent
-
-# 添加白名单（管理员）
-/yachiyo_whitelist_add 123456
-
-# 移除白名单（管理员）
-/yachiyo_whitelist_remove 123456
-```
-
-## 平台差异
-
-| 平台 | Normal 提醒 | Urgent 提醒 |
-|------|-------------|-------------|
-| QQ 群聊 | 文字模板 | TTS 语音 + 文字轰炸 |
-| QQ 私聊 | 文字模板 | 文字轰炸 |
-| 微信 | 文字模板 | 文字轰炸 |
-
-## 依赖
-
-- AstrBot >= 4.0.0
-- httpx (用于 NapCat API 调用)
-- NapCat 扩展（仅 QQ 群聊 TTS 功能需要）
+1. `python build_zip.py`（仓库根 astrbot_plugin_yachiyo_manager/ 下）生成 zip，或直接 scp 目录覆盖 `data/plugins/astrbot_plugin_yachiyo_manager/`
+2. 重启 AstrBot 或 WebUI reload 插件
+3. 配置项在 WebUI 插件配置页
 
 ## 注意事项
 
-1. **定时任务持久化** - 提醒数据存储在 KV Store 中，AstrBot 重启后自动恢复未过期的提醒
-2. **角色人格注入** - 通过 @on_llm_request 追加模式注入八千代角色上下文，与 AngelHeart 等插件共存
-3. **白名单默认开启** - QQ 平台白名单默认开启，需管理员添加用户后才能使用
-4. **LLM 工具调用** - 通过 `/yachiyo <消息>` 可用自然语言设置/取消/查看提醒，LLM 自动调用对应的 Function Tool
-
-## 问题排查
-
-| 问题 | 原因 | 解决 |
-|------|------|------|
-| 命令无响应 | 未加入白名单 | 管理员用 `/yachiyo_whitelist_add` 添加 |
-| LLM对话无回复 | 未配置LLM或provider不可用 | 换用命令通道 `/yachiyo_fushi_reminder` |
-| TTS语音没发 | 非QQ群聊 / NapCat未配置 | TTS仅QQ群聊支持，检查 napcat_api_url |
-| 重启后提醒丢失 | KV Store异常 | 查看AstrBot日志 |
-| 角色人格没生效 | persona_enabled 关闭 | WebUI中检查开关 |
-
-## 角色设定
-
-月见八千代是 8000 岁的月读空间管理员，语气温柔但略带腹黑，会用「神明大人」称呼用户。
+- **注入顺序**：on_llm_request priority 为降序（数值大先执行），本插件(100)先于 angel_heart(50/0)；最终 system_prompt = 原生协议 → 本插件动态块 → scene_prompt
+- **隐私**：LifeOS 上下文仅 owner 私聊注入；群聊非 @ 消息不注入人格块
+- **白名单**：微信个人号直接放行；QQ 走白名单（`yachiyo_whitelist_add`）
+- 提醒持久化在 KV Store，重启自动恢复
 
 ## License
 

@@ -32,9 +32,9 @@ def extract_section(content: str, heading: str) -> str:
 def parse_weekly_log_table(content: str) -> list[dict]:
     """解析「本周日志」表格，返回日期→数据的映射列表。
 
-    兼容两种格式：
-    - 旧版（8列）：日期 | 精力 | 情绪 | 焦虑 | 创作 | 脱离 | L1 | 备注
-    - 新版（9列）：日期 | 精力 | 情绪 | 焦虑 | 加班 | 创作 | 脱离 | L1 | 备注
+    兼容两种格式（按有效列数判断，split 空串不计）：
+    - 新版（8列）：日期 | 精力 | 情绪 | 焦虑 | 创作 | 脱离 | L1 | 备注
+    - 旧版（9列）：日期 | 精力 | 情绪 | 焦虑 | 加班 | 创作 | 脱离 | L1 | 备注
     """
     rows = []
     in_log = False
@@ -45,9 +45,10 @@ def parse_weekly_log_table(content: str) -> list[dict]:
             continue
         if in_log and stripped.startswith("|") and "---" not in stripped and "日期" not in stripped:
             parts = [p.strip() for p in stripped.split("|")]
-            n = len(parts)
-            if n >= 9:
-                # 新版 9列：日期 | 精力 | 情绪 | 焦虑 | 加班 | 创作 | 脱离 | L1 | 备注
+            # 按位置算列数（len-2 去首尾空串），空单元格保留（避免空 L1/空备注掉行）
+            n_cols = len(parts) - 2
+            if n_cols >= 9:
+                # 旧版 9列：日期 | 精力 | 情绪 | 焦虑 | 加班 | 创作 | 脱离 | L1 | 备注
                 try:
                     rows.append({
                         "date": parts[1],
@@ -58,23 +59,23 @@ def parse_weekly_log_table(content: str) -> list[dict]:
                         "creative": parts[6],
                         "detachment": parts[7],
                         "l1": parts[8],
-                        "note": parts[9] if n > 9 else "",
+                        "note": parts[9] if len(parts) > 9 else "",
                     })
                 except (ValueError, IndexError):
                     continue
-            elif n >= 7:
-                # 旧版 8列：日期 | 精力 | 情绪 | 焦虑 | 创作 | 脱离 | L1 | 备注
+            elif n_cols >= 8:
+                # 新版 8列：日期 | 精力 | 情绪 | 焦虑 | 创作 | 脱离 | L1 | 备注
                 try:
                     rows.append({
                         "date": parts[1],
                         "energy": _parse_int(parts[2]),
                         "mood": _parse_int(parts[3]),
                         "anxiety": _parse_int(parts[4]),
-                        "overtime": "",  # 旧格式无加班列
+                        "overtime": "",  # 新格式无加班列
                         "creative": parts[5],
                         "detachment": parts[6],
                         "l1": parts[7],
-                        "note": parts[8] if n > 8 else "",
+                        "note": parts[8] if len(parts) > 8 else "",
                     })
                 except (ValueError, IndexError):
                     continue
