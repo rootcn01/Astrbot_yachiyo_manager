@@ -1,6 +1,7 @@
 # MiMo TTS 音色复刻 · 验证与接入方案（2026-09-18）
 
 > 状态：**Phase 0 已裁决（2026-09-18 深夜）**——`jp3_style`（日语+贴耳风格指令）用户判定「挺像」；裸合成、中文跨语言均不像。
+> 🆕 **相似度优化线（2026-09-19）**：链路全通但用户持续判「不像」→ 调研/诊断/方案见 [optimization-research-2026-09-19.md](optimization-research-2026-09-19.md)（H1 带宽坐实 5kHz + 官方闹钟 App 09-18 上线 + 本机 4060Ti 微调路线；分阶段决策门在内，**勿绕过该报告直接开工**）。
 
 ## ⭐ 冻结配方（Phase 1 照此，勿改语言）
 
@@ -125,6 +126,7 @@ docker exec <astrbot容器> cat /AstrBot/data/cmd_config.json | grep -A3 platfor
 | 文件 | 作用 |
 |---|---|
 | `mimo_voice_check.py` | Phase 0 验证脚本（零依赖，stdlib only） |
+| `spectral_check.py` | 参考音频带宽取证（numpy+ffmpeg；新素材验收必跑） |
 | `api_key.txt`（你创建） | API Key，gitignored |
 | `reference.wav|mp3`（你放入） | 参考音频，gitignored |
-| `outputs/` | 合成产物，gitignored |
+| `outputs/` | 合成产物，gitignored（含 `ab_2026-09-19/` 试听包） |
