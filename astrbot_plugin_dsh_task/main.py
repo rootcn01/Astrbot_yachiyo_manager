@@ -181,11 +181,14 @@ class DshTaskPlugin(Star):
     # ── 入口（门禁不变量：三路径同一实现，方案 §3.1）──
 
     @llm_tool(name="run_task")
-    async def run_task(self, event: AstrMessageEvent, task: str = "", mode: str = "new") -> str:
+    async def run_task(self, event: AstrMessageEvent,
+                       task: str, mode: str = "new") -> str:
         """在服务器上执行深度任务（DeepSeek Harness agent），跑完异步回推结果。
         仅当用户明确要求在服务器上执行任务/跑 agent/深度查证并整理时调用；日常聊天问答不要调用。
-        :param task: 任务全文，尽量保留用户原话与细节;
-        :param mode: new=新会话（默认）；continue=沿用该用户最近会话继续（保留文件与 shell 状态）;
+
+        Args:
+            task(string): 任务全文，尽量保留用户原话与细节
+            mode(string): new=新会话（默认）；continue=沿用该用户最近会话继续（保留文件与 shell 状态）
         """
         if not self._is_owner(event):
             return "OWNER_ONLY：该工具仅 owner（微信私聊）可用。"
