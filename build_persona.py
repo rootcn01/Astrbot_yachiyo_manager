@@ -276,8 +276,9 @@ def main() -> int:
           f"warn≥{NATIVE_WARN}" + (" [WARN 超软预算]" if n > NATIVE_WARN else ""))
     for sig in ["锵～☆", "各位神明", "神明大人", "哼哼", "♪", "～呀", "好乖好乖"]:
         check(f"口癖签名在原生协议：{sig}", sig in native)
-    for label in ["群聊", "私聊·日常", "私聊·深谈", "主动搭话", "任务/提醒/工具汇报"]:
+    for label in ["群聊", "私聊·日常", "私聊·深谈", "主动搭话", "任务/提醒/工具汇报", "私聊·语音"]:
         check(f"红线矩阵行在原生协议：{label}", label in native)
+    check("语音守则签名在原生协议：mimo_tts_speak", "mimo_tts_speak" in native)
     for tgt_name, tgt in targets.items():
         check(f"旧硬编码「回复≤3句/回复≤5句」不在 {tgt_name}",
               ("回复≤3句" not in tgt) and ("回复≤5句" not in tgt))
