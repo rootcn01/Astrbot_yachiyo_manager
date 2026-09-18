@@ -147,3 +147,7 @@ P1 只做深任务档；快问 `/dsq`、进度心跳 = P2；信源标注 `[A/B/C
 4. SDK `env` 字段是合并语义（`os.environ.copy()` + update），可安全注入 DSH_* 变量。
 5. 排查容器内文件必须 `docker exec`——在宿主机 grep 容器路径会出"幽灵不存在"假警报（本窗自摆乌龙一次）。
 6. 冒烟任务设计教训：让 agent 在 `scratch/`（gitignored）建文件再 collect 提交是自相矛盾的测试——目标产物应放 `tasks/<slug>/`。
+7. **session id 跨 runtime 实例不可复用（rc1）**：diag 复现 R1 同实例 OK → R2 新实例+旧持久化 id 报 `already exists` → R3 同实例换新 id 立即可用。插件修复：捕获该错→同 harness 换新会话重跑一次→回执注明「续接已降级为新会话」。真续接要等 SDK 支持从盘恢复。
+8. **AstrBot 插件热重载会腰斩进行中任务**（00:10:47 杀掉 0919-02 websearch；00:10/00:17/00:21 三次全量插件扫描，触发源未定位，疑似面板操作）。对账推送兜底已实证（interrupted-by-restart 行+推送），并加了 15s 平台就绪延迟。运维口径：跑长任务时别在面板动插件。
+9. **任务 ID 撞号**：内存序号热重载归零 → 0919-01 出现两次。修复：初始化时从 TASKLOG 播种当日最大序号。
+10. **collect.sh 首提交漏扫**：`git status --porcelain` 把未跟踪目录折叠成 `?? tasks/`，白名单匹配不到具体文件。修复 `-uall`（此 bug 由 agent 在任务中自己发现、给出正确修法并绕过完成提交——约束体系闭环的实证）。
