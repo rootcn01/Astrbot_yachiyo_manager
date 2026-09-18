@@ -12,7 +12,7 @@ while IFS= read -r f; do
   if [[ "$f" == "tasks/"$slug"/*" ]]; then
     add+=("$f")
   fi
-done < <(git status --porcelain | awk '{print $2}')
+done < <(git status --porcelain -uall | awk '{print $2}')
 
 for f in "$@"; do
   [ -e "$f" ] && add+=("$f")

@@ -44,6 +44,7 @@ class DshTaskPlugin(Star):
     async def initialize(self):
         self._ws = Path(self.config.get("workspace_path", "/AstrBot/data/dsh_workspace"))
         self._init_workspace()
+        self._seed_seq()
         await self._load_sessions()
         self._reconcile_tasklog()
         if self.config.get("tavily_api_key"):
@@ -127,6 +128,7 @@ class DshTaskPlugin(Star):
                 asyncio.create_task(self._interrupt_push(tid, umo, ts))
 
     async def _interrupt_push(self, tid: str, umo: str, ts: str):
+        await asyncio.sleep(15)   # 等平台适配器就绪，避免启动即推被吞
         await self._send(umo, f"⚠️ #{tid} 因插件/容器重启中断（受理于 {ts}）。需要的话请重发任务。")
         await self._tasklog(f"FAIL | {tid} | interrupted-by-restart")
 
@@ -255,17 +257,49 @@ class DshTaskPlugin(Star):
         self._seq += 1
         return f"{datetime.now().strftime('%m%d')}-{self._seq:02d}"
 
+    def _seed_seq(self):
+        """从台账恢复当日序号——插件热重载后内存计数归零会撞号（0919-01 复发案例）。"""
+        today = datetime.now().strftime("%m%d")
+        mx = 0
+        p = self._ws / TASKLOG_NAME
+        if p.exists():
+            for ln in p.read_text(encoding="utf-8").splitlines():
+                m = re.search(rf"\| {today}-(\d{{2}}) \|", ln)
+                if m:
+                    mx = max(mx, int(m.group(1)))
+        self._seq = mx
+
+    async def _rotate_session(self, umo: str) -> dict:
+        s = {"session_id": uuid.uuid4().hex[:12], "turns": 1,
+             "updated": datetime.now().isoformat(timespec="seconds")}
+        self._sessions[umo] = s
+        await self._save_sessions()
+        return s
+
     async def _worker(self, tid: str, umo: str, task: str, sess: dict):
         wall = int(self.config.get("task_wallclock_minutes", 15)) * 60
         t0 = time.time()
+        degraded = False
         try:
             async with self._lock:
                 self._cancel_idle()
                 try:
                     h = await self._ensure_harness()
-                    result = await asyncio.wait_for(
-                        asyncio.to_thread(h.run, task, session_id=sess["session_id"]),
-                        timeout=wall)
+                    try:
+                        result = await asyncio.wait_for(
+                            asyncio.to_thread(h.run, task, session_id=sess["session_id"]),
+                            timeout=wall)
+                    except Exception as e:
+                        if "already exists" not in str(e):
+                            raise
+                        # rc1 实测：持久化 session id 只能在同一 runtime 实例内复用，
+                        # 跨实例（idle 关闭/插件重载后）run() 报 already exists。
+                        # 同 harness 换新 id 重跑一次（diag 验证此路径可用），续接降级为新会话。
+                        sess = await self._rotate_session(umo)
+                        degraded = True
+                        result = await asyncio.wait_for(
+                            asyncio.to_thread(h.run, task, session_id=sess["session_id"]),
+                            timeout=wall)
                     final = (getattr(result, "final_response", None) or "").strip()
                 except asyncio.TimeoutError:
                     await self._kill_runtime()
@@ -292,8 +326,9 @@ class DshTaskPlugin(Star):
                 await self._send(umo, f"❌ #{tid} agent 轮次失败（finish={finish or 'none'}）：{err or '无输出'}")
                 await self._tasklog(f"FAIL | {tid} | agent-error: {finish} | {err[:100]}")
                 return
-            await self._send(umo, self._format_result(tid, time.time() - t0, final))
-            await self._tasklog(f"DONE | {tid} | {int(time.time() - t0)}s | out:{len(final)}ch")
+            note = "\n（注：原会话跨重启不可续接，已自动开新会话重跑本任务）" if degraded else ""
+            await self._send(umo, self._format_result(tid, time.time() - t0, final) + note)
+            await self._tasklog(f"DONE | {tid} | {int(time.time() - t0)}s | out:{len(final)}ch" + (" | session-rotated" if degraded else ""))
         finally:
             self._current = None
             self._arm_idle()
