@@ -36,7 +36,7 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
    - **转写交叉校对毕**（whisper×MiMo 双 ASR+带角色提示词重转写三方裁决）：17 处修正（八千夜→八千代/縁も竹縄→宴もたけなわ/ヤチオ→八千代/犬同士 等，`corrections.json` 52 条含依据）、3 条存疑保留原版、2 条串音疑点终裁剔除（p2_049 问答同片/bd_028 语体突变搭腔）。
    - **同 CV 补充集** `finetune_dataset_natural/`（早見本人广播「Memories & Discoveries」2026-06-09 期自然语域）：2h 源→w900 干净锚（其余 6 窗实为歌曲/纯音乐被转写证伪）→ASR 文本筛剔歌/幻觉/嘉宾→ECAPA 逐片+块纯度→beam5 定稿，**134 片/561s 独立成包**。混训占比勿超 30-40%，推理 prompt 永用角色域。
    - **同 CV 可行性口径**（用户问「大差不差？」）：可行但要打折——ECAPA 实测同 CV 跨语域 0.33 ≈ 不同 CV 同域 0.30-0.44，语域拖动与身份同量级；建议 A/B 训练（角色 only vs 角色+补充）再定配比。
-2. ~~**训练**~~ ✅ **2026-09-19 第四班完成（本机 4060Ti）**：整合包 v2pro（20250604，魔搭直链 8.19GB→`E:\DATA\GPT-SoVITS\`）；无头训练驱动 `tools_p2_mining/train_yachiyo.py`（复刻 webui 四步 prep+双训练，断点分步）。**A 模型**（纯角色 106 行）与 **B 模型**（+34% 同 CV 自然域 161 行，`finetune_dataset_ab/` 仅 list 入库、wav 可再生）各 ~25 分钟跑完。**AB 试听包**=`outputs/ab_finetune_2026-09-19/`（A/B×3句×3 prompt 档 + MiMo V2 同文基线，ASR 回环 3/3 过）**等用户判词定配方**。
+2. ~~**训练**~~ ✅ **2026-09-19 第四班完成（本机 4060Ti）**：整合包 v2pro（20250604，魔搭直链 8.19GB；**2026-09-19 已迁 `F:\AIPart\GPT-SoVITS\GPT-SoVITS-v2pro-20250604\`**（用户 AI 工具惯例位，E 盘减负 33G；users.pth 已改写、A 权重推理冒烟通过；安装包 .7z 已删可重下））；无头训练驱动 `tools_p2_mining/train_yachiyo.py`（复刻 webui 四步 prep+双训练，断点分步）。**A 模型**（纯角色 106 行）与 **B 模型**（+34% 同 CV 自然域 161 行，`finetune_dataset_ab/` 仅 list 入库、wav 可再生）各 ~25 分钟跑完。**AB 试听包**=`outputs/ab_finetune_2026-09-19/`（A/B×3句×3 prompt 档 + MiMo V2 同文基线，ASR 回环 3/3 过）**等用户判词定配方**。
    **本班四坑**：①整合包 `runtime/.../users.pth` 硬编码打包机路径（D:\BaiduNetdiskDownload\...）须改写成本机包路径否则 `No module named 'text'`；②数据集目录必须**平铺 wav**（脚本取 basename 拼 inp_wav_dir，子目录全静默丢）；③`gpu_numbers` 必须 "0"（"0-0"=同卡双 rank DDP 死锁）、训练前须预建 `logs_s2_v2ProPlus/` 目录（s2 存档 shutil.move 不建目录直接炸）；④**`pretrained_s1` 是顶层 yaml 键**（我误放 train 子字典→GPT 77.6M 随机初始化，症状=输出恒 0.7s 截断+top_3_acc 卡 0.015；修复后 0.89+）。另：推理 prompt 必须 ≥3s；inference_cli 只写流式最后一片，拼接要直调 get_tts_wav。
 3. **dev-hub 任务包**：按 §2 方案 v2 出 spec（router/bridge/voicemode 插件三件+测试矩阵+回滚）。
 4. **watchdog runbook v4 修订**（判据 C）——与训练并行可做。
@@ -48,6 +48,7 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 - **根因量化**：A/B 输出 10kHz=-77~-83dB=训练源窄带复现（P2 f99≈3.9k/BD≈3.6k/natural≈2.2k）；MiMo -44dB（引擎全频段+高频外推）。
 - **修复=VoiceFixer 带宽扩展训练集**（`tools_p2_mining/enhance_bw.py`，mode0，106 片，10kHz 提升 ~88dB，转写不变）→ **A_enh 重训**（`yachiyo_A_enh`，同配方）。客观验收：AENH 输出 10kHz=-38dB**优于 MiMo**、12kHz -54.8dB 同样领先；ASR 回环 3/3。
 - **二轮试听包**：`outputs/ab_finetune_2026-09-19/` 新增 `AENH_s{1,2,3}_*.wav`（prompt 同用增强版），**等用户判词「通透度是否追平/超过 MiMo、音色有无损伤」**。过 → A_enh 权重进部署包；VoiceFixer 也可作为 bridge 输出侧兜底工具（模型已缓存 `~/.cache/voicefixer`）。
+- **二轮判词（用户，2026-09-19 傍晚）= 带宽扩展线关闭**：AENH「感觉并没有变好，通透感没有增强，语气语速可能也有些问题，性价比不大；并没有比 MiMo 强，个人感官和原版差距不大」。**结论：客观指标（10kHz -38dB）与听感脱节——VoiceFixer 生成的高频不是她的高频身份证，指标涨听感不涨还带副作用；A_enh 不进部署，A（原始窄带训练）保持为微调线现役交付物。**「明显超过 MiMo」的真解锁=无损宽源（BD 特装版 LPCM，¥330 起，等用户拍板）；MiMo 相对微调的优势项也收敛为「音质通透」单点（稳定性/情绪一致性已输给 A）。
 
 ## 4. 遗留与挂账
 
