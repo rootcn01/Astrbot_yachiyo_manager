@@ -65,6 +65,15 @@
     - **「发图回了两次」判读（非 bug）**：napcat 发送记录坐实=图消息（13:50:09）与「这是什么？」（13:50:11）两条消息**各触发一次 LLM 回复**（私聊全唤醒+图无文本也作答+第二轮上下文里图还在→同答案），非重复发送；对策=图和文字在 QQ 里**合成一条发**（配文发图）即单次回复。AstrBot 无私聊消息聚合窗口配置，插件级聚合不做（收益小）。
     - **待验证**：语音 STT 端到端（挂载后用户未再发语音实测）。napcat 快速登录（-q/ACCOUNT）未配，重启 napcat 仍需扫码——根治攒下次（用户知情）。
 
+18. **✅ QQ 语音 STT 六层修复收官（09-19 15:29，端到端全绿）**：终验证据=`语音转文本结果: 听得见我说话吗？嗯，下午好啊。`→「下午好呀，神明大人～♪」。完整根因链与修复（每层实证）：
+    ①napcat `enableLocalFile2Url:true`——语音消息进 AstrBot（ComponentType.Record 从全史零到有）；
+    ②**QQ 语音本体是加密体**：napcat 落地的 .amr（4KB）ffmpeg 都打不开（Invalid data）、QQ 直链下载 67 字节错误体——本地/直链两路皆死，**唯一活路=napcat get_record API**（OneBot 标准，内部解密+转码，实测返回 120KB 真 wav base64）；
+    ③**adapter 补丁（核心修复）**：`aiocqhttp_platform_adapter.py` else 分支加 record 专用处理——调 `get_record(file, out_format='wav')` 拿 base64 → `Record(file='base64://...')`（下游 MediaResolver 直解，失败回退原构造）；备份 `patches_backup/aiocqhttp_platform_adapter.py.orig.20260919`；
+    ④components.py 的 Record path 优先补丁（同日早些打的）在 ③ 生效后成为**无害冗余**（base64 在 path 之前返回），留作防御层；备份 `patches_backup/components.py.orig.20260919`；
+    ⑤**版本回退事故与修复**：compose 重建把 AstrBot 从 4.26.5 打回本地 latest=4.23.2（旧容器的 4.26.5 是 WebUI 在线更新在可写层）——已拉 `soulter/astrbot:v4.26.5` 镜像+**.env 固定 VERSION=v4.26.5**（杜绝再漂移）；
+    ⑥**mimo_stt 模型名**：`mimo-v2-omni` 已下架（Unsupported）；正确名=**`mimo-v2.5`**（全模态 chat，实测转写准）——该 key 可用模型全小写命名（/v1/models 实拉 6 个）；专用 `mimo-v2.5-asr` 走 chat 端点要求「不带 text parts（网关注入）」与 AstrBot 的 prompt 配置冲突，弃用。
+    **⚠️ 补丁重放 runbook（compose 重建容器后必做，可写层补丁会丢）**：`docker cp` 两个补丁脚本重放（components path 优先 + adapter get_record base64）→ `docker restart astrbot-astrbot-1` → 验证日志「适配器已连接」。补丁脚本存服务器 /tmp 与本地 %TEMP% 均为临时位置，**正本应入库**：本仓 `changes/persona-hub/server_patches/`（下轮补录）。mimo_stt 计费：mimo-v2.5 按全模态 token 计（非 ASR ¥0.5/h 档），私聊语音量级成本可忽略。
+
 ## 2. 架构（原稿 + 编译分发）
 
 
