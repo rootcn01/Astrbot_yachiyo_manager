@@ -86,3 +86,11 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 12. torchaudio 2.11 load 要 torchcodec——直接 wave 模块读+torchaudio.functional.resample 绕开。
 
 —— 2026-09-19 ZCode 窗交接。方案对抗全记录在当窗对话；本文件为唯一执行依据。
+
+## 3.3 音源勘源·实测闭环（2026-09-20 凌晨，双 subagent 调研+主席逐项验尸）
+
+**YT 官方源（活，配方已破解）**：`yt-dlp --js-runtimes node --remote-components ejs:github --extractor-args "youtube:player_client=web_embedded" -f 140`（默认 androidvr 必 403）。实测：本編冒頭 5m42s=**11.2kHz 宽带**（但混人说：八千代旁白 31-60s≈13s + かぐや/彩葉对白，demucs 后 ECAPA 被混响压到 0.1-0.2 无法自动分人，只能内容判读取旁白段）；Remember MV=10.5kHz 全曲；niconico 官方同母带 192k 略优；**舞台挨拶类=PA 录音源头窄带（4.2k）死路**。**2026-12-26 ツクヨミ感謝祭 YT 免费直播（八千代 CV 出演）=未来宽带说话声来源，值得届时录档**。
+**B站同 CV 清单（全灭）**：星見雅 rip=**中配**（绝区零国服≠早見）；ふり〜すたいる 96min 谈话=语种对但**母带窄带**（129k 容器装烂源 -131dB@10k）；綾華 29min=主体中配+6kHz。教训：**B站码率≠带宽，验源必跑频谱**。
+**HF/ModelScope 数据集（假货）**：ichayc/Frieren1.1=两段 79s×2+四份 Copia 重复，whisper 转写呈「私は、私は」合成伪影，ECAPA 对真人早見锚仅 0.16-0.23（真人自比 0.97）——AI 生成物，弃；mextre/frieren=6 个重复 mp3 垃圾包。**无任何真早見原始数据集**（只有 RVC/VITS 权重）。
+**radiko**：M&D 电台正片唯一官方回听渠道（日本 IP+账号，AAC~60k 估 10-14k），非角色声，中低优先级。
+**结论：宽带「说话声」免费路径穷尽——BD 通常版从「最优解」升格为「唯一解」**；网易云 VIP 的现实用途=无损全曲 Remember/星降る海（宽带「唱」，12% 样片实验已证混入无害无益，更高占比可试但唱歌语域风险已知）。
