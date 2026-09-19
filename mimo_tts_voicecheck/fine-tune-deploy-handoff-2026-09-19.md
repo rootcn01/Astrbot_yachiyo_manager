@@ -42,6 +42,13 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 4. **watchdog runbook v4 修订**（判据 C）——与训练并行可做。
 5. 验收：三句 AB（bridge vs MiMo V2）用户盲听终审；延迟 p50≤5s/p95≤8s；回落≤15s 无感。
 
+## 3.1 判词与带宽修复线（2026-09-19 第五班）
+
+- **一轮判词（用户）**：A（纯角色 106 行）整体好于 B（+34% 同 CV 自然域）→ **配方=纯角色域**，B 归档为对照。痛点=A/B「沙沙电话感」、MiMo「通透但抽风+情绪乱」（微调线上位理由再+1）。
+- **根因量化**：A/B 输出 10kHz=-77~-83dB=训练源窄带复现（P2 f99≈3.9k/BD≈3.6k/natural≈2.2k）；MiMo -44dB（引擎全频段+高频外推）。
+- **修复=VoiceFixer 带宽扩展训练集**（`tools_p2_mining/enhance_bw.py`，mode0，106 片，10kHz 提升 ~88dB，转写不变）→ **A_enh 重训**（`yachiyo_A_enh`，同配方）。客观验收：AENH 输出 10kHz=-38dB**优于 MiMo**、12kHz -54.8dB 同样领先；ASR 回环 3/3。
+- **二轮试听包**：`outputs/ab_finetune_2026-09-19/` 新增 `AENH_s{1,2,3}_*.wav`（prompt 同用增强版），**等用户判词「通透度是否追平/超过 MiMo、音色有无损伤」**。过 → A_enh 权重进部署包；VoiceFixer 也可作为 bridge 输出侧兜底工具（模型已缓存 `~/.cache/voicefixer`）。
+
 ## 4. 遗留与挂账
 
 - git：Yachiyo_Project `693b9d2` 因 GitHub 443 间歇未 push（本地安全），网络恢复补推；其余无欠账（LifeOS 到 dd3d200、Yachiyo 到 bd9da4f）。
