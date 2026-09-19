@@ -1,11 +1,11 @@
 {
   "version": "v2026.09.19",
-  "built_at": "2026-09-19T03:29:21",
+  "built_at": "2026-09-19T09:48:29",
   "source": "persona/",
   "targets": {
     "native_persona_protocol.md": {
-      "chars": 2303,
-      "sha256_16": "bd42c2497988dcda"
+      "chars": 2152,
+      "sha256_16": "e2800213f99093d6"
     },
     "analyzer_identity.txt": {
       "chars": 431,
@@ -30,6 +30,10 @@
     "planner_prompts.txt": {
       "chars": 559,
       "sha256_16": "5840a7fbab72c42b"
+    },
+    "tone_zones.json": {
+      "chars": 3156,
+      "sha256_16": "3c51e20607c203cb"
     }
   }
 }

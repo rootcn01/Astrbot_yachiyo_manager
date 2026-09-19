@@ -107,6 +107,34 @@ def sample_tone_lines(text: str, picks: dict[str, list[int]]) -> str:
     return "\n".join(lines_out)
 
 
+# 台词区短名 → 20 模块章节标题匹配词
+ZONE_TITLES = {"营业": "顶流营业", "温柔": "温柔安慰", "腹黑": "腹黑调戏"}
+
+# 协议内静态兜底采样（营业区 ID）：与 tone_zones.json 的 native_picks 同源
+NATIVE_TONE_IDS = [2, 5]
+
+
+def parse_tone_zones(text: str) -> dict:
+    """解析 20-tone-library 三区表格为结构化 dict（W3 产物源数据）。"""
+    pat = re.compile(r"^\|\s*(\d+)\s*\|([^|]+)\|([^|]+)\|([^|]+)\|", re.M)
+    zones: dict[str, list[dict]] = {z: [] for z in ZONE_TITLES}
+    cur = None
+    for line in text.splitlines():
+        if line.startswith("## "):
+            cur = next((short for short, t in ZONE_TITLES.items() if t in line), None)
+            continue
+        if cur:
+            m = pat.match(line)
+            if m:
+                zones[cur].append({
+                    "id": int(m.group(1)),
+                    "quote": m.group(2).strip(),
+                    "ctx": m.group(3).strip(),
+                    "src_line": m.group(4).strip(),
+                })
+    return zones
+
+
 def sha256_of(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()[:16]
 
@@ -129,10 +157,10 @@ def main() -> int:
     guard_core = cut(mods["70-guardrails.md"], "core")
 
     # ── 靶位 1：原生人格协议 ─────────────────────────────
-    fewshot = sample_tone_lines(
-        mods["20-tone-library.md"],
-        {"顶流营业": [2, 5, 7], "温柔安慰": [2, 5], "腹黑调戏": [1, 4]},
-    )
+    # D1-A：协议只留营业区最小兜底采样（链路保底——manager 跳过场景下协议是唯一来源）；
+    # 温柔/腹黑示范自 W3 起由 manager 按关系等级运行时选区注入（tone_zones.json）。
+    native_picks = {"顶流营业": NATIVE_TONE_IDS}
+    fewshot = sample_tone_lines(mods["20-tone-library.md"], native_picks)
     native = "\n\n".join([
         id_core,
         voice_core,
@@ -144,6 +172,31 @@ def main() -> int:
         stamp,
     ])
     (BUILD / "native_persona_protocol.md").write_text(native, encoding="utf-8")
+
+    # ── 靶位 8：台词分区数据（W3 · manager 运行时选区） ──
+    zones = parse_tone_zones(mods["20-tone-library.md"])
+    zone_ids = {z: [it["id"] for it in items] for z, items in zones.items()}
+    tone_zones = {
+        "version": version,
+        "built_at": datetime.now().isoformat(timespec="seconds"),
+        "tiers": {
+            "stranger": ["营业"],
+            "acquaintance": ["营业"],
+            "familiar": ["营业", "温柔"],
+            "close": ["营业", "温柔", "腹黑"],
+            "intimate": ["营业", "温柔", "腹黑"],
+        },
+        # 协议静态采样已含的条目：动态选区注入时排除，防双重示范
+        "native_picks": {"营业": list(NATIVE_TONE_IDS)},
+        "zones": zones,
+    }
+    tone_json = json.dumps(tone_zones, ensure_ascii=False, indent=2)
+    (BUILD / "tone_zones.json").write_text(tone_json, encoding="utf-8")
+    # 同步进 manager 插件包（build_zip.py 全目录打包自动带上）
+    import shutil
+    res_dir = ROOT / "astrbot_plugin_yachiyo_manager" / "resources"
+    res_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(BUILD / "tone_zones.json", res_dir / "tone_zones.json")
 
     # ── 靶位 2：分析器身份（观测子系统包装） ─────────────
     analyzer = "\n".join([
@@ -257,6 +310,7 @@ def main() -> int:
         "kb/Timeline_Bonds.md": kb_timeline,
         "proactive_pack.md": proactive,
         "planner_prompts.txt": planner,
+        "tone_zones.json": tone_json,
     }
     manifest = {
         "version": version,
@@ -291,6 +345,23 @@ def main() -> int:
     check("KB·World 含月读法则", "月读空间物理法则" in kb_world)
     check("分析器身份带观测子系统包装", "月读观测子系统" in analyzer)
     check("分析器身份不含演出指令", "月夜见系统接入成功" not in analyzer)
+
+    # ── W3 自检：台词分区产物 ────────────────────────────
+    check(f"tone_zones 三区条数 9/6/6（实得 {len(zones['营业'])}/{len(zones['温柔'])}/{len(zones['腹黑'])}）",
+          (len(zones["营业"]), len(zones["温柔"]), len(zones["腹黑"])) == (9, 6, 6))
+    all_quotes = [it["quote"] for items in zones.values() for it in items]
+    norm_quotes = [re.sub(r"（[^）]*）", "", q) for q in all_quotes]
+    dup_lit = len(all_quotes) - len(set(all_quotes))
+    dup_norm = len(norm_quotes) - len(set(norm_quotes))
+    check(f"tone_zones 字面跨区共享句=1（实得 {dup_lit}）", dup_lit == 1)
+    check(f"tone_zones 去括注后共享句=2、唯一句 19（实得 {dup_norm}）", dup_norm == 2)
+    check("tone_zones tiers 五级齐全",
+          set(tone_zones["tiers"]) == {"stranger", "acquaintance", "familiar", "close", "intimate"})
+    check("协议营业兜底采样 ≤3 条且在营业区内",
+          len(native_picks["顶流营业"]) <= 3
+          and all(i in zone_ids["营业"] for i in native_picks["顶流营业"]))
+    check("manager resources 同步一致",
+          (res_dir / "tone_zones.json").read_text(encoding="utf-8") == tone_json)
 
     print(f"== Yachiyo persona build {version} ==")
     for k, v in targets.items():

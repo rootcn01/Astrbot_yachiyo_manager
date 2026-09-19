@@ -56,6 +56,9 @@ class YachiyoManager(Star):
 
         self._user_cache: dict[str, dict] = {}
         self._whitelist: dict = None
+        # D0：interaction 计数按消息 id 去重（agent 循环一轮可能多次 on_llm_request）
+        from collections import deque
+        self._counted_msgs: deque = deque(maxlen=256)
 
         logger.info("八千代插件已初始化（含 Life OS v2.2 全局工具）")
 
@@ -68,7 +71,26 @@ class YachiyoManager(Star):
         await self.reminder_manager.restore_all()
         await self.proactive_scheduler.start()
         await self.google.initialize()
+        self._load_tone_zones()
         logger.info("八千代插件激活完成")
+
+    def _load_tone_zones(self):
+        """W3：加载台词分区选区数据（编译产物，随插件包分发）。
+        缺文件/坏 JSON = 选区关闭回退纯协议采样，禁静默用旧数据。"""
+        import json as _json
+        try:
+            path = Path(__file__).parent / "resources" / "tone_zones.json"
+            data = _json.loads(path.read_text(encoding="utf-8-sig"))
+            self.persona_builder.tone_zones = data
+            zones = data.get("zones", {})
+            logger.info(
+                f"台词库选区数据加载 v{data.get('version')} "
+                f"（营业{len(zones.get('营业', []))}/温柔{len(zones.get('温柔', []))}/"
+                f"腹黑{len(zones.get('腹黑', []))}）")
+        except FileNotFoundError:
+            logger.warning("tone_zones.json 缺失：台词选区注入关闭（纯协议采样）")
+        except Exception as e:
+            logger.warning(f"tone_zones.json 加载失败（选区关闭）：{e}")
 
     async def terminate(self):
         """插件卸载时取消所有待执行的提醒任务"""
@@ -687,6 +709,11 @@ class YachiyoManager(Star):
             )
 
             req.system_prompt = (req.system_prompt or "") + "\n" + prompt
+            # D0：注入成功 = 一次真实人格互动，修活关系计数（按消息 id 去重）
+            msg_id = getattr(getattr(event, "message_obj", None), "id", "")
+            if msg_id and msg_id not in self._counted_msgs:
+                self._counted_msgs.append(msg_id)
+                await self._update_user_interaction(user_id)
             # Life OS 上下文（含主动建议）—— 仅对 owner 注入，防止隐私泄露
             if self._is_owner(event):
                 req.system_prompt += self.life_os.build_context_block()
@@ -952,6 +979,7 @@ class YachiyoManager(Star):
         old_last_seen = s["last_seen"]
         s["interaction_count"] += 1
         s["last_seen"] = time.time()
+        old_rel, old_mood = s["relationship"], s["mood"]
         n = s["interaction_count"]
         if n >= 100:
             s["relationship"] = "intimate"
@@ -968,7 +996,12 @@ class YachiyoManager(Star):
             s["mood"] = "slightly_worried"
         else:
             s["mood"] = "happy"
-        await self._save_user_state(user_id, s)
+        # 节流落盘：关系跨档 / 心情变化 / 距上次落盘 >10min 才写 KV（防每消息写放大）
+        now = time.time()
+        if (s["relationship"] != old_rel or s["mood"] != old_mood
+                or now - s.get("last_persist", 0) > 600):
+            s["last_persist"] = now
+            await self._save_user_state(user_id, s)
 
     async def _try_read_ltm(self, event) -> str:
         try:
