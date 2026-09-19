@@ -56,6 +56,8 @@
     - **判据③统计器 ✅**：`changes/persona-hub/wah_judge3_stats.py`（宿主机 sudo python3 跑，--since 24h）；从 docker logs 提取 LLM 调用数（按群分组）/参与 vs 不参与/策略分布/话题 top5/延迟 p50-p95（调用→决策行配对）/AngelHeart 错误数；本地干测 4 类行正则全命中后服务器实跑，与手采样本完全一致（12h 窗：1 调用/2.4s/零错误）。
     - **运行时新证据（日志级）**：①金丝雀群 187109260 已有插话决策样本（「不参与·原因:不在场」）②白名单外老群 709923858 的 @消息走完整秘书链——对抗 HIGH-1 的爆炸半径实况坐实（白名单只管插话不管@）③@轮策略覆写字面量=「被呼唤回复」实况坐实（W3 D3 映射的第六分支依据）④analyzer 延迟实测 2.4s。
 
+16. **fallback 终版（09-19 13:32，用户点名四条全百炼链）**：`[百炼/qwen3.8-max, 百炼/qwen3.8-max-0902, 百炼/deepseek-v4-pro, 百炼/deepseek-v4-pro-0813]`。中间插曲：用户在 13:19 版后自行经 WebUI 调过 fallback 并自建 百炼/deepseek-v4-pro-0813 provider（读到的旧值=三条件态），本版在其基础上定稿。新建 provider 百炼/deepseek-v4-pro（复制 qwen3.8-max 结构；**去掉 enable_thinking**——qwen 系参数对百炼的 deepseek 模型有 400 风险，deepseek 用默认行为）。qwen3.8-max 居链首=主模型失败后同款即时重试（救瞬时抖动）。**链尾无异构家族兜底**（全链百炼账号，百炼整体故障时无候补——用户知情选择，glm 系/官方 deepseek provider 仍在列表可随时回加）。备份 `backups/cmd_config.20260919-model2.bak`；TASKLOG DONE 零中断；重启验证四条全加载、default 不变。**秘书 analyzer 及各分工位确认=单点无链**（analyzer_model 单字段锁 deepseek/deepseek-flash 官方源；AstrBot fallback 只包主对话请求）——切百炼 flash 档攒观察期后（避免污染 W-AH 判据）。
+
 ## 2. 架构（原稿 + 编译分发）
 
 
