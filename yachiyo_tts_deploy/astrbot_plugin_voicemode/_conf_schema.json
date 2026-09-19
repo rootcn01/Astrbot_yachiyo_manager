@@ -1,0 +1,17 @@
+{
+  "router_base_url": {
+    "description": "yachiyo-tts-router 基础地址（含协议与端口，不含路径），AstrBot 容器经 docker 网桥访问宿主机",
+    "type": "string",
+    "default": "http://172.19.0.1:8800"
+  },
+  "bridge_token": {
+    "description": "router/bridge 共享令牌（X-Bridge-Token 请求头），与部署侧同值；占位 CHANGE_ME 需在部署时替换",
+    "type": "string",
+    "default": "CHANGE_ME"
+  },
+  "owner_ids": {
+    "description": "允许使用 /voicemode 命令的用户 ID（QQ 号）列表；此外 Bot/群管理员字段为真时始终放行",
+    "type": "list",
+    "default": ["1010233339"]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "_note": "yachiyo-tts-bridge 配置样例。部署时复制为 E:/DATA/YachiyoRuntime/bridge/config.json 并手填 token；_ 开头字段为注释不参与逻辑",
+  "bind": "127.0.0.1",
+  "port": 9881,
+  "token": "CHANGE_ME",
+  "prompt_map_path": "E:/DATA/YachiyoRuntime/prompt_map.json",
+  "runtime_dir": "E:/DATA/YachiyoRuntime",
+  "engine": {
+    "_note": "引擎根 F:/AIPart/GPT-SoVITS/GPT-SoVITS-v2pro-20250604；api_v2 CLI 无权重参数(-a=bind_addr/-p=port/-c=tts_config, api_v2.py:134-136)，权重经 /set_gpt_weights + /set_sovits_weights 热载(api_v2.py:545-565)",
+    "python_exe": "F:/AIPart/GPT-SoVITS/GPT-SoVITS-v2pro-20250604/runtime/python.exe",
+    "api_v2_path": "F:/AIPart/GPT-SoVITS/GPT-SoVITS-v2pro-20250604/api_v2.py",
+    "cwd": "F:/AIPart/GPT-SoVITS/GPT-SoVITS-v2pro-20250604",
+    "host": "127.0.0.1",
+    "port": 9880,
+    "gpt_weights": "E:/DATA/YachiyoRuntime/weights/gpt_yachiyo_v1.ckpt",
+    "sovits_weights": "E:/DATA/YachiyoRuntime/weights/sovits_yachiyo_v1.pth",
+    "startup_timeout_s": 300,
+    "request_timeout_s": 30,
+    "crash_restart_delay_s": 10
+  },
+  "game_processes": ["r5apex.exe"],
+  "game_poll_s": 5.0,
+  "vram_poll_s": 10.0,
+  "vram_threshold_mib": 2500,
+  "unload_confirm_poll_s": 2.0,
+  "unload_confirm_timeout_s": 30.0,
+  "reload_debounce_s": 45,
+  "rate_limit_rpm": 6,
+  "max_text_len": 120,
+  "heartbeat_path": "E:/DATA/YachiyoRuntime/heartbeat.json",
+  "heartbeat_interval_s": 60,
+  "keywords": {
+    "_note": "style_context 关键词(ja/zh/en 混编, 小写化子串匹配)；判定顺序 sad→tender 优先, 再 happy, 再 tender, miss 落 default",
+    "sad": ["悲しい", "辛い", "つらい", "寂しい", "泣", "伤心", "难过", "哭", "sad", "lonely", "cry"],
+    "happy": ["楽しい", "嬉しい", "わくわく", "たのし", "高兴", "开心", "快乐", "happy", "glad", "yay", "great"],
+    "tender": ["大丈夫", "頑張", "がんば", "安心", "抱きしめ", "温柔", "安慰", "加油", "tender", "gentle", "comfort", "care"]
+  },
+  "test_hooks": {
+    "force_state": "none"
+  },
+  "log_dir": "E:/DATA/YachiyoRuntime/bridge/logs",
+  "log_max_bytes": 10485760,
+  "log_backups": 5
+}

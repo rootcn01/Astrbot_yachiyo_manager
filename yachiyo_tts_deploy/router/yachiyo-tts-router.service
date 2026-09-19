@@ -1,0 +1,29 @@
+# yachiyo-tts-router systemd 单元（Ubuntu 24.04）
+# 安装位置：/etc/systemd/system/yachiyo-tts-router.service（deploy_server.sh 代劳）
+[Unit]
+Description=yachiyo-tts-router (TTS bridge/cloud router on docker bridge 172.19.0.1:8800)
+Documentation=file:/opt/yachiyo-tts-router/config.example.json
+After=network-online.target docker.service
+Wants=network-online.target
+# 网桥地址未就绪时允许无限重试（配合 ExecStartPre 探测，防 StartLimit 连失锁死）
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+# User=root 注记：绑定 172.19.0.1（docker 自定义网桥地址）要求该地址已存在于宿主机网络
+# 命名空间（随 docker 网络拉起），且需写 /var/lib（state/counters）、/var/log（日志）与读
+# /etc 配置，故以 root 运行最简。如需降权：确认 bind 地址存在后改 User= 并授予上述目录写权限。
+User=root
+# 等 docker 网桥地址 172.19.0.1 出现（至多 60s），出现前不启动主进程
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do ip -4 addr show | grep -q 172.19.0.1 && exit 0; sleep 2; done; exit 1'
+ExecStart=/usr/bin/python3 /opt/yachiyo-tts-router/yachiyo_router.py --config /etc/yachiyo-tts-router/config.json
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+# 可选加固（默认注释；若自定义 state_dir/log_path 需同步调整 ReadWritePaths）：
+#ProtectSystem=full
+#ReadWritePaths=/var/lib/yachiyo-tts-router /var/log/yachiyo-tts-router
+#ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+# yachiyo-bridge frpc 客户端配置样例（部署时复制为 frpc.toml 并手填 auth.token）
+# frps 复用 fit-frps.service（bindPort 7400, proxyBindAddr=127.0.0.1）
+serverAddr = "110.40.182.106"
+serverPort = 7400
+auth.token = "CHANGE_ME"
+
+[[proxies]]
+name = "yachiyo-bridge"
+type = "tcp"
+localPort = 9881
+remotePort = 9881

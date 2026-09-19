@@ -1,0 +1,5 @@
+name: astrbot_plugin_voicemode
+display_name: 语音模式切换
+desc: 通过 /voicemode 切换 yachiyo TTS 路由模式（auto/local/cloud）并查询状态
+version: v1.0.0
+author: lotus-zcode
