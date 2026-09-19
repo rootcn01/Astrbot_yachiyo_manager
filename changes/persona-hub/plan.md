@@ -135,7 +135,9 @@ persona/70-guardrails.md    防线（身份/剧透/注入/情绪/格式/隐私�
 - proactive/proactive_history 的占位符（{{current_time}} 等）在 W2 合入时必须原样保留。
 - **KeyError 'type'**：每次启动 provider.manager:283 报一次（全史 15 次，先于本次改动存在）——某个 provider 条目缺 type 字段，W2 顺手定位修复（备份在案，与人格线无耦合）。
 - livingmemory 重启后 8 条旧记忆已找回，但其向量索引是旧模型产物；W2 若换 embedding 模型需触发其 index rebuild（其配置有 migration/rebuild 开关）。
-- **napcat HTTP API「未监听」结论作废（09-19 13:45 翻案）**：当时实测在 astrbot 容器/宿主 curl `localhost:3000` 均拒绝连接=**测试姿势错误**——napcat 是独立容器、3000 未映射宿主，正确地址是容器网络名 `http://napcat:3000`（已实测 get_status 返回 online/good 双 true）。manager 的 QQ 群 TTS（send_group_ai_record）改用此地址后应可活，快赢候选复活。
+- **napcat HTTP API「未监听」结论作废（09-19 13:45 翻案）**：当时实测在 astrbot 容器/宿主 curl `localhost:3000` 均拒绝连接=**测试姿势错误**——napcat 是独立容器、3000 未映射宿主，正确地址是容器网络名 `http://napcat:3000`（已实测 get_status 返回 online/good 双 true）。manager 的 QQ 群 TTS（send_group_api_record）改用此地址后应可活，快赢候选复活。
+- **napcat 无快速登录（用户拍板：记录，后续一起修）**：容器为裸 docker run（非 compose、无 `ACCOUNT` 环境变量），每次重启需扫码。修法=重建时加 `-e ACCOUNT=2725576624`，**必须保留**：QQ 数据卷（acf13e58…→/app/.config/QQ，astrbot 挂载依赖它）、config 卷（2257841a…→/app/napcat/config）、双网络（astrbot-net 需固定可解析地址——当前 ws 写死 172.19.0.2）、6099 端口映射；重建后预计还需最后一次扫码，此后一劳永逸。攒到下次方便扫码的时机与其他 napcat 侧改动一起做。
+- **QQ 语音 STT 端到端终验未完成（09-19 结构修复后用户未再发语音）**：挂载修复就位（path 直命中本地 .amr），差一条真实语音验证「语音转文本结果」日志行；若 mimo_stt 对 .amr 格式仍报错（其校验 WAV），备选=STT 换百炼 `qwen3-asr-flash`（provider 新建+cmd_config 停机改，观察期后做）。
 - **QQ 语音 STT / 纯图片消息根因诊断（09-19，待用户拍板修法）**：napcat 侧语音接收正常（03:49「接收←[语音 2s]」在案）、HTTP API 可达，断点=**napcat 报文的消息段 file 字段是 napcat 容器内本地路径**（onebot11 config `enableLocalFile2Url: false`），astrbot 容器读不到该路径 → STT 收到坏/空音频（历史 67 字节观察吻合）→ 空文本；纯图片消息同理变空 → 不唤醒主模型（12:54 私聊纯图后 3.5 分钟零 LLM 痕迹）。修法主选=napcat 开 `enableLocalFile2Url: true`（并确保生成 url 的 host 是 astrbot 可达名，如容器名 napcat 而非 0.0.0.0/127.0.0.1）；**需重启 napcat，有 QQ 掉线风险（历史判例：重启=掉线需重扫码）**——执行前必须用户知情拍板。
 - **秘书 analyzer 已切百炼（09-19 13:39）**：analyzer_model `deepseek/deepseek-flash` → `阿里百炼/qwen3.8-flash`（新建 provider，enable_thinking=false 保持）；用户拍板提前切（观察期刚开始，基线直接定在最终形态）。观察期判据①数据自切换后起算。
 - QQ 号悬案 `703030437/703030473` 机器验尸失败（platform_message_history 空表——group_icl 关着没记历史；napcat API 不通）→ 转用户人工确认。
