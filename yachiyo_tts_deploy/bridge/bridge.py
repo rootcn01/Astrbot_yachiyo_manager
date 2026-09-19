@@ -132,9 +132,11 @@ class RotatingLog:
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 _NVIDIA_SMI_ABS = "C:/Windows/System32/nvidia-smi.exe"
 def nvidia_smi_cmd():
-    """绝对路径优先（PATH 劫持/缺失免疫），shutil.which 回退。"""
-    if os.path.exists(_NVIDIA_SMI_ABS):
-        return _NVIDIA_SMI_ABS
+    """绝对路径优先（PATH 劫持/缺失免疫），NVSMI 惯例位与 shutil.which 回退。"""
+    for cand in (_NVIDIA_SMI_ABS,
+                 "C:/Program Files/NVIDIA Corporation/NVSMI/nvidia-smi.exe"):
+        if os.path.exists(cand):
+            return cand
     return shutil.which("nvidia-smi") or "nvidia-smi"
 def tasklist_running(process_name, _runner=subprocess.run):
     """tasklist /fi 探测进程是否存在（Windows）。"""
@@ -241,6 +243,7 @@ class EngineSupervisor:
         if any(self.tasklist(p) for p in self.cfg["game_processes"]):
             # F7: 热载前先查游戏名单——命中则不热载，直接走卸载分支
             log.info("game process present during loading; skip weight load, unload")
+            self.game_detected, self._absence_since = True, None  # 复审 L：同步置位防误开 debounce
             self._set_state("busy")
             self._unload()
             return
@@ -252,8 +255,9 @@ class EngineSupervisor:
             return True
         for path_key, route in (("gpt_weights", "/set_gpt_weights"),      # api_v2.py:545-554
                                 ("sovits_weights", "/set_sovits_weights")):  # api_v2.py:557-565
+            # 复审 M：冷加载 ckpt/pth 可超 15s，timeout 回 60s（防卡 loading 到 300s 启动超时）
             status, body = self.transport("GET", self.base_url + route,
-                                          params={"weights_path": self.ecfg[path_key]}, timeout=15)
+                                          params={"weights_path": self.ecfg[path_key]}, timeout=60)
             if status != 200 or b"success" not in body:
                 log.error("weights load failed %s: %s %s", route, status, body[:200])
                 return False
@@ -282,8 +286,10 @@ class EngineSupervisor:
                     self.proc.stdout.close()
             except Exception:
                 pass
-            self._confirm_vram_released()  # F8: 显存回落确认后才算卸载完成
-            self.proc, self.engine_pid = None, None
+            self.proc = None
+        # 复审 L：显存确认轮询放锁外（busy 已置位挡新请求，监督线程不必持锁干等 30s）
+        self._confirm_vram_released()  # F8: 显存回落确认后才算卸载完成
+        self.engine_pid = None
     def _confirm_vram_released(self):
         """等子进程退出后轮询 nvidia-smi（默认 2s 间隔至多 30s）直到 vram<阈值。"""
         deadline = time.monotonic() + self.cfg["unload_confirm_timeout_s"]

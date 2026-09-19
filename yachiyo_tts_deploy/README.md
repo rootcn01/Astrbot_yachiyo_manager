@@ -22,7 +22,7 @@ token 真值三处同源：`E:\DATA\YachiyoRuntime\bridge\config.json` ↔ `/etc
 - **auto×5 态矩阵**：ready✅ / busy✅（云回落 3.9s 实弹）/ loading✅（busy_reason=bridge_loading 实时）/ down✅（探测连失 2 次降级、云接管 9.8s、复线恢复）/ mode=cloud✅（直通 3.5s）。
 - **local 明确报错**：502 `bridge_unavailable` 32ms，不上云。
 - **安全面**：bridge 127.0.0.1+token+6RPM（429 实测）；9881 隧道口仅服务器回环（frps proxyBindAddr）；8800 仅 docker 网桥+UFW 172.19.0.0/16 窄域；frps 带 token。
-- **异家族审查**（Cursor grok-4.6-xhigh 强席，1H+14M+10L，FAIL→回修 22/22+3 自选）：复审结论见 git 提交信息。
+- **异家族审查**（Cursor grok-4.6-xhigh 强席两轮）：一轮 FAIL（1H/14M/10L）→回修 22/22+3 自选；二审 **PASS_WITH_FIX**（F1-F22 确认落地，余 5M/8L 中 9 项当场清：热载超时 60s、云墙钟 120s、_resp_socket 回退链、500 固定文案、admin 先鉴权后读体、getresponse 分段超时、ExecStartPre grep -F、NVSMI 惯例位回退、插件 HTTPError close）。挂账不修：bridge 合成 30s vs router 8s 的锁占用差（静默回落不受影响，设计取舍）；owner_ids 待补微信 sender_id（见 §3）。
 - **鉴权次序/闸门**（回修后实弹）：错 token+垃圾 body→401；raw>120 字（含可 strip 记号）→400；>512KB body→413；合成回归 200。
 
 ## 3. 已知非阻塞事项
@@ -31,7 +31,7 @@ token 真值三处同源：`E:\DATA\YachiyoRuntime\bridge\config.json` ↔ `/etc
 - 计划任务为**登录触发**（注册 AtStartup/任意用户触发需管理员权限被拒）——机器重启后需用户登录一次才拉起 bridge/frpc；要开机即起（免登录）用 `bridge/install/install_nssm.ps1`（需管理员装 NSSM）。
 - 本机 frpc 无独立守护崩溃重启（任务级 RestartInterval 60s 兜底）。
 - 音频通道 AB 素材：`mimo_tts_voicecheck/outputs/ab_bridge_smoke_2026-09-20/BRIDGE_s{1,2,3}_default.wav`，与 `outputs/ab_finetune_2026-09-19/MIMO_V2_s{1,2,3}*.wav` 同文对拍。
-- 待用户手做（安全 §4 尾巴）：Clash 加 `IP-CIDR,110.40.182.106/32,DIRECT`；确认本机电源「睡眠=从不」。
+- 待用户手做（安全 §4 尾巴）：Clash 加 `IP-CIDR,110.40.182.106/32,DIRECT`；确认本机电源「睡眠=从不」；把微信侧 sender id 补进 AstrBot `plugin_data/astrbot_plugin_voicemode/config.json` 的 `owner_ids`（当前仅 QQ 1010233339+AstrBot 管理员放行）。
 
 ## 4. 上线切换（用户终审门，一键两步）
 

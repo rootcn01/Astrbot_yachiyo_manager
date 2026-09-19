@@ -66,7 +66,7 @@ class RouterConfig:
         self.probe_fail_threshold = max(1, int(raw.get("probe_fail_threshold") or 2))
         self.bridge_connect_timeout_s = float(raw.get("bridge_connect_timeout_s") or 2)
         self.bridge_total_timeout_s = float(raw.get("bridge_total_timeout_s") or 8)
-        self.cloud_timeout_s = float(raw.get("cloud_timeout_s") or 60)  # F18: 整个透传墙钟上限（含读响应）
+        self.cloud_timeout_s = float(raw.get("cloud_timeout_s") or 120)  # F18: 整个透传墙钟上限（含读响应；复审 M：对齐插件 120s 余量）
         self.state_dir = Path(str(raw.get("state_dir") or "/var/lib/yachiyo-tts-router"))
         self.log_path = Path(str(raw.get("log_path") or "/var/log/yachiyo-tts-router/router.log"))
         if not self.bridge_url or not self.cloud_base_url:
@@ -156,6 +156,7 @@ def http_call(url, *, method, headers, body, connect_timeout, total_timeout):
         conn.sock = sock
         sock.settimeout(_remaining("request"))   # 发送 + 等响应头
         conn.request(method, target, body=body, headers=headers)
+        sock.settimeout(_remaining("response"))  # 复审 L：等响应头前再收紧
         resp = conn.getresponse()
         sock.settimeout(_remaining("read"))      # 读响应体
         data = resp.read()
@@ -276,11 +277,15 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def _resp_socket(resp):
-    """取响应底层 socket（成功则可为每段读收紧超时）；取不到返回 None。"""
-    try:
-        return resp.fp.raw._sock
-    except Exception:
-        return None
+    """取响应底层 socket（成功则可为每段读收紧超时）；取不到返回 None。
+    复审 M：urllib3 形态 resp.fp.raw._sock 在 stdlib 下常取不到——多级回退。"""
+    for cand in (lambda: resp.fp.raw._sock,
+                 lambda: resp.fp._sock):
+        try:
+            return cand()
+        except Exception:
+            continue
+    return None
 
 
 def read_with_deadline(resp, deadline, chunk=65536):
@@ -337,7 +342,8 @@ class _Handler(BaseHTTPRequestHandler):
             self.close_connection = True
         except Exception as exc:  # 兜底：线程不崩
             try:
-                self._send_json(500, {"error": {"message": "router internal error: %s" % exc,
+                # 复审 L：对外固定文案（不泄 str(exc)），细节只进日志
+                self._send_json(500, {"error": {"message": "router internal error",
                                                 "code": "internal", "type": "router_error"}})
             except Exception:
                 self.close_connection = True
@@ -397,12 +403,14 @@ class _Handler(BaseHTTPRequestHandler):
     # ---- 端点 ----
     def _handle_admin_mode(self):
         app = self.server.app
-        body = self._read_body()
+        # 复审 L：先鉴权再读 body（与 bridge 同序，未授权不消费请求体）
         if not self._token_ok():
             app.log_event("admin mode_set denied (bad token)")
+            self.close_connection = True
             self._send_json(401, {"error": {"message": "unauthorized", "code": "unauthorized",
                                             "type": "router_error"}})
             return
+        body = self._read_body()
         try:
             payload = json.loads(body.decode("utf-8"))
             new_mode = payload["mode"]

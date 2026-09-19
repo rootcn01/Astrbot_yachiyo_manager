@@ -16,7 +16,7 @@
   "probe_fail_threshold": 2,
   "bridge_connect_timeout_s": 2,
   "bridge_total_timeout_s": 8,
-  "cloud_timeout_s": 60,
+  "cloud_timeout_s": 120,
   "_note_cloud_timeout": "透传云整体墙钟超时（秒，默认 60，含连接与读响应——不是单次 socket 超时）。",
   "state_dir": "/var/lib/yachiyo-tts-router",
   "_note_state_dir": "存放 state.json（mode，重启保持）与 counters.json（按日期键控，只留今日+昨日）。",

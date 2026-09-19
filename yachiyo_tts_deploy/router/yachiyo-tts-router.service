@@ -15,7 +15,7 @@ Type=simple
 # /etc 配置，故以 root 运行最简。如需降权：确认 bind 地址存在后改 User= 并授予上述目录写权限。
 User=root
 # 等 docker 网桥地址 172.19.0.1 出现（至多 60s），出现前不启动主进程
-ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do ip -4 addr show | grep -q 172.19.0.1 && exit 0; sleep 2; done; exit 1'
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do ip -4 addr show | grep -F "inet 172.19.0.1/" && exit 0; sleep 2; done; exit 1'
 ExecStart=/usr/bin/python3 /opt/yachiyo-tts-router/yachiyo_router.py --config /etc/yachiyo-tts-router/config.json
 Restart=always
 RestartSec=3

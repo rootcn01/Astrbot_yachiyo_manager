@@ -170,6 +170,11 @@ class VoiceModePlugin(Star):
                 text = exc.read().decode("utf-8", errors="replace")
             except Exception:
                 text = ""
+            finally:
+                try:
+                    exc.close()  # 复审 L：HTTPError 读完必关，防 fd 泄漏
+                except Exception:
+                    pass
             return exc.code, _parse_json(text)
         except Exception as exc:
             raise RouterUnreachableError(

@@ -47,7 +47,7 @@ TTS 判据：JSON body 有**顶层 `audio` 对象**（ASR 的 input_audio 在 me
 | TTS + local + 桥失败（含 probe=down） | `502 {"error":{"message":"yachiyo local bridge unavailable","code":"bridge_unavailable","type":"router_error"}}`，**不上云** | fallback |
 | 其余路径/方法（/v1/models 等） | 透传云 | forward |
 
-透传 = 全头转发（Authorization 等全保留；剥 hop-by-hop：Connection/Transfer-Encoding/Keep-Alive/TE/Trailer/Upgrade/Proxy-*，另剥 Host/Content-Length/Expect/X-Bridge-Token——最后者防桥 token 外泄给云，由转发层重建/添加）+ body 原样 + 云响应原样回（状态/头/体，3xx 不跟随重定向）。透传整体墙钟超时 `cloud_timeout_s`（默认 60s，含读响应）。router 自有端点仅 `GET /health` 与 `POST /admin/mode`，其余一切（含对这两个端点的其他方法）都透传。
+透传 = 全头转发（Authorization 等全保留；剥 hop-by-hop：Connection/Transfer-Encoding/Keep-Alive/TE/Trailer/Upgrade/Proxy-*，另剥 Host/Content-Length/Expect/X-Bridge-Token——最后者防桥 token 外泄给云，由转发层重建/添加）+ body 原样 + 云响应原样回（状态/头/体，3xx 不跟随重定向）。透传整体墙钟超时 `cloud_timeout_s`（默认 120s，含读响应，对齐插件超时余量）。router 自有端点仅 `GET /health` 与 `POST /admin/mode`，其余一切（含对这两个端点的其他方法）都透传。
 
 已知边界：客户端 chunked 请求体不支持（openai SDK 对 JSON body 恒发 Content-Length）；auto+ready 时桥挂会先耗最多 8s 再回落云。
 
