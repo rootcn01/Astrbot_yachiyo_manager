@@ -14,5 +14,17 @@
   "text": "つくよみの夜景が大好きなのです",
   "train_wav": "wav/p2_050.wav"
  },
- "_note": "style→MiMo style_context 关键词映射种子(部署方案§2.3)；miss 落 default；文本=faster-whisper 口径"
+ "_note": "style→MiMo style_context 关键词映射种子(部署方案§2.3)；miss 落 default；文本=faster-whisper 口径",
+ "sad": {
+  "wav": "prompt_tender.wav",
+  "text": "いつもいっぱい頑張ってるんだね",
+  "note": "v1 哀腔暂落 tender（素材无哀声，BD 到位后升级——见 deploy 包 v2 清单）"
+ },
+ "_paths": {
+  "runtime_dir": "E:/DATA/YachiyoRuntime",
+  "gpt": "weights/gpt_yachiyo_v1.ckpt",
+  "sovits": "weights/sovits_yachiyo_v1.pth",
+  "prompts_dir": "prompts",
+  "note": "部署资产固化 2026-09-20，模型=yachiyo_A_char(e15/e8_s848) 定版 v1"
+ }
 }
