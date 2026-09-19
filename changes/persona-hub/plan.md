@@ -50,6 +50,12 @@
     - **W3 编码 ✅（本地，未部署——D3 与部署按排程压到观察期后）**：①D0 关系计数修活：inject_persona 注入成功路径调 `_update_user_interaction`（消息 id 去重 deque 256 防 agent 循环多轮重复计数；节流落盘=跨档/变mood/>10min 才写 KV）②新靶位 `persona/out/tone_zones.json`（三区结构化+tiers 五级+native_picks 去重标记；编译尾部自动同步进 `astrbot_plugin_yachiyo_manager/resources/`，build_zip 全目录打包自动带上）③协议采样收缩 D1-A：营业 [2,5] 两条兜底（原 7 条）④persona_builder v2.5 选区段：替换式档位（stranger/acquaintance→营业；familiar→+温柔；close/intimate→三区）、协议采样条目排除、跨区字面去重、群聊每区上限 3 ⑤启动校验：resources 缺文件/坏 JSON=WARN+选区关闭（回退纯协议采样，禁静默旧数据）⑥自检 36→**44 项全绿**（三区条数 9/6/6、字面重复 1+去括注重复 2 双口径——对抗结论的「2 条重复」系语义口径，字面仅 1 条、腹黑侧带括注）、产物幂等 ⑦新测试 `tests/test_persona_builder.py` 7/7 本地过（数据驱动用真实产物；坑：台词语境列嵌套「」会污染提取正则，须锚定行首）。测试算式坑：群聊档跨区重复句不同时出现（温柔#5/腹黑#6 不在前3），期望=2+3+3=8 非 6。
     - **遗留到下班的班次**：W3 部署+容器内全量 pytest（含 reminder 3 例需 astrbot 环境）；D3 群聊映射段（等 W-AH 去留结论）；W4 执行（开 memorize 开关+set_nickname+真实写入验证）；W-AH 三判据数据收集与拍板。
 
+15. **▶️ 执行轮第一班·下半（09-19 午后 ZCode，用户指令：判据统计脚本+set_nickname 编码+模型源调整）**：
+    - **模型 fallback 重排 ✅（用户意图=百炼赠送额度优先花，deepseek 留到快用完）**：主对话本就是百炼/qwen3.8-max（W2.5 切的，用户原以为没切）；实改=fallback 链 `[ds-flash, ds-v4-pro, 百炼/glm-5.2]` → **`[百炼/qwen3.8-max-0902, 百炼/qwen3.7-plus, 百炼/glm-5.2, ds-flash, ds-v4-pro]`**（前三条百炼花赠送额度；qwen3.8-max-0902 为新建 provider，复制 qwen3.8-max 条目仅改 id/model，enable_thinking=false/modalities 全同；五条 provider 全部真实存在零死链——W2.5 死链教训）。百炼账号模型列表已实拉（dashscope compatible-mode /models，200+ 个在列）。stop→edit→start，备份 `backups/cmd_config.20260919-model.bak`，重启验证加载行齐、dsh 零中断。**analyzer/planning/livingmemory 的 deepseek-flash 刻意未动**——切它们会给 W-AH 观察期引入秘书行为变量，攒观察期后与 W4 一起。
+    - **W4 set_nickname 编码 ✅（本地未部署）**：main.py 新增 @llm_tool（record_expense 前，关系/记忆类小节）；docstring 写明「仅用户明确要求时调用」（防滥用）；≤12 字硬截断；返回 NICKNAME_OK|nickname=…|replaced=… 机器可读串。与 W3 攒一个部署包。
+    - **判据③统计器 ✅**：`changes/persona-hub/wah_judge3_stats.py`（宿主机 sudo python3 跑，--since 24h）；从 docker logs 提取 LLM 调用数（按群分组）/参与 vs 不参与/策略分布/话题 top5/延迟 p50-p95（调用→决策行配对）/AngelHeart 错误数；本地干测 4 类行正则全命中后服务器实跑，与手采样本完全一致（12h 窗：1 调用/2.4s/零错误）。
+    - **运行时新证据（日志级）**：①金丝雀群 187109260 已有插话决策样本（「不参与·原因:不在场」）②白名单外老群 709923858 的 @消息走完整秘书链——对抗 HIGH-1 的爆炸半径实况坐实（白名单只管插话不管@）③@轮策略覆写字面量=「被呼唤回复」实况坐实（W3 D3 映射的第六分支依据）④analyzer 延迟实测 2.4s。
+
 ## 2. 架构（原稿 + 编译分发）
 
 

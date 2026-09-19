@@ -179,6 +179,29 @@ class YachiyoManager(Star):
     #  Life OS 全局工具（@llm_tool — 默认聊天流自动可用）
     # ═══════════════════════════════════════════════════════════
 
+    # ── 关系/记忆类（W4）──
+
+    @llm_tool(name="set_nickname")
+    async def set_nickname(self, event: AstrMessageEvent,
+                           nickname: str = "") -> str:
+        """当用户明确要求记住对TA的称呼时调用（如「以后叫我XX」「记住，叫我XX就好」）。
+        只在用户明确提出时调用；从对话自行推断的称呼不要写入。
+        更新后下一轮对话你就会以这个称呼叫TA。
+
+        Args:
+        nickname(string): 用户要求的称呼，≤12字，原样保留用户的用词
+        """
+        nickname = (nickname or "").strip()[:12]
+        if not nickname:
+            return "NICKNAME_EMPTY|未记录"
+        user_id = self._get_user_id(event)
+        state = await self._get_or_load_user_state(user_id)
+        old = state.get("nickname", "")
+        state["nickname"] = nickname
+        await self._save_user_state(user_id, state)
+        replaced = f"|replaced={old}" if old else ""
+        return f"NICKNAME_OK|nickname={nickname}{replaced}"
+
     @llm_tool(name="record_expense")
     async def record_expense(self, event: AstrMessageEvent,
                              amount: float, description: str,
