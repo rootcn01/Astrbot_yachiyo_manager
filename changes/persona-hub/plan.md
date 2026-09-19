@@ -58,6 +58,13 @@
 
 16. **fallback 终版（09-19 13:32，用户点名四条全百炼链）**：`[百炼/qwen3.8-max, 百炼/qwen3.8-max-0902, 百炼/deepseek-v4-pro, 百炼/deepseek-v4-pro-0813]`。中间插曲：用户在 13:19 版后自行经 WebUI 调过 fallback 并自建 百炼/deepseek-v4-pro-0813 provider（读到的旧值=三条件态），本版在其基础上定稿。新建 provider 百炼/deepseek-v4-pro（复制 qwen3.8-max 结构；**去掉 enable_thinking**——qwen 系参数对百炼的 deepseek 模型有 400 风险，deepseek 用默认行为）。qwen3.8-max 居链首=主模型失败后同款即时重试（救瞬时抖动）。**链尾无异构家族兜底**（全链百炼账号，百炼整体故障时无候补——用户知情选择，glm 系/官方 deepseek provider 仍在列表可随时回加）。备份 `backups/cmd_config.20260919-model2.bak`；TASKLOG DONE 零中断；重启验证四条全加载、default 不变。**秘书 analyzer 及各分工位确认=单点无链**（analyzer_model 单字段锁 deepseek/deepseek-flash 官方源；AstrBot fallback 只包主对话请求）——切百炼 flash 档攒观察期后（避免污染 W-AH 判据）。
 
+17. **▶️ QQ 语音/图片链修复轮（09-19 14:00 ZCode，用户「修」授权）**：
+    - **根因三层（逐层实证）**：①napcat 报文 record 段 `file`=裸文件名/`path`=napcat 容器内路径/`url`=QQ 官方直链——`enableLocalFile2Url:true` 只解决了「语音进 AstrBot」（ComponentType.Record 从全史零记录变有），**不改变段形态**；②AstrBot `Record._resolve_file_source` 对裸 file 名跳过、url 下载得到 67 字节垃圾（QQ 直链过期/受限或 ws 上报时 url 缺失）、path 在 astrbot 容器不可见——三路全断；③**图片链路其实一直通**（`Image.convert_to_file_path` 用 `url or file` 优先直链；13:50:16 准确识别 Minecraft 漫画佐证）——语音/图片行为差异=组件实现差异非配置。
+    - **修法（结构级）**：napcat 的 QQ 数据卷（volume `acf13e58…`）**只读挂载进 astrbot 容器同路径** `/app/.config/QQ`（compose 增行+external volume 声明；docker-compose legacy 二进制 `docker-compose` 而非 `docker compose`）——record 段 `path` 字段直接命中本地 .amr 真文件（3.7KB），STT 走本地文件彻底绕开下载链。**Ptt/Ori 目录挂载后可见性已验证**。
+    - **连带排雷**：compose 重建 astrbot 容器后内网 IP 漂移（astrbot-net 里 172.19.0.2 丢失——旧容器是 compose 外手动 `network connect` 的，重建即掉），napcat ws 反向写死旧 IP 循环超时——`docker network connect astrbot-net astrbot-astrbot-1` 接回（自动分配恰好拿回 .2），ws 重连验证通过；**astrbot-net 双网络成员身份已固化进 compose**（下次重建不再掉）。napcat 全程未再重启，QQ 保持在线。
+    - **「发图回了两次」判读（非 bug）**：napcat 发送记录坐实=图消息（13:50:09）与「这是什么？」（13:50:11）两条消息**各触发一次 LLM 回复**（私聊全唤醒+图无文本也作答+第二轮上下文里图还在→同答案），非重复发送；对策=图和文字在 QQ 里**合成一条发**（配文发图）即单次回复。AstrBot 无私聊消息聚合窗口配置，插件级聚合不做（收益小）。
+    - **待验证**：语音 STT 端到端（挂载后用户未再发语音实测）。napcat 快速登录（-q/ACCOUNT）未配，重启 napcat 仍需扫码——根治攒下次（用户知情）。
+
 ## 2. 架构（原稿 + 编译分发）
 
 
