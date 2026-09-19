@@ -32,7 +32,10 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 
 ## 3. 下一 session 工作队列（按序）
 
-1. ~~**数据集挖掘**~~ ✅ **2026-09-19 第二班完成**：`finetune_dataset/` 108 片 / 298s（p2 角色 51 / bd 谈话 49 / bc 正式 8）+ 3 prompt + `yachiyo.list`（faster-whisper 正日文）+ README（含再生管线与扩量路径）。**翻案**：P2 整包=八千代语音包（ECAPA 定案，resemblyzer 无区分度弃用）；BD 三簇=三 CV 各一，早見=c2；MiMo ASR 只能 auto。扩量首选=买 BD 特装版。
+1. ~~**数据集挖掘**~~ ✅ **2026-09-19 第二班完成+第三班增补**：主集 `finetune_dataset/` **106 片 / 289s 终稿**（p2 角色 50 / bd 谈话 48 / bc 正式 8）+ 3 prompt + `yachiyo.list`（faster-whisper 正日文）+ README。**翻案**：P2 整包=八千代语音包（ECAPA 定案，resemblyzer 无区分度弃用）；BD 三簇=三 CV 各一，早見=c2；MiMo ASR 只能 auto。扩量首选=买 BD 特装版。
+   - **转写交叉校对毕**（whisper×MiMo 双 ASR+带角色提示词重转写三方裁决）：17 处修正（八千夜→八千代/縁も竹縄→宴もたけなわ/ヤチオ→八千代/犬同士 等，`corrections.json` 52 条含依据）、3 条存疑保留原版、2 条串音疑点终裁剔除（p2_049 问答同片/bd_028 语体突变搭腔）。
+   - **同 CV 补充集** `finetune_dataset_natural/`（早見本人广播「Memories & Discoveries」2026-06-09 期自然语域）：2h 源→w900 干净锚（其余 6 窗实为歌曲/纯音乐被转写证伪）→ASR 文本筛剔歌/幻觉/嘉宾→ECAPA 逐片+块纯度→beam5 定稿，**134 片/561s 独立成包**。混训占比勿超 30-40%，推理 prompt 永用角色域。
+   - **同 CV 可行性口径**（用户问「大差不差？」）：可行但要打折——ECAPA 实测同 CV 跨语域 0.33 ≈ 不同 CV 同域 0.30-0.44，语域拖动与身份同量级；建议 A/B 训练（角色 only vs 角色+补充）再定配比。
 2. **训练**：本机 GPT-SoVITS v2ProPlus 整合包（4060Ti 8G：SoVITS bs1/GPT bs2，不跑 DPO；2-3h）或云新人券（趋动云 ¥168，0.5-2 卡时）。数据集直接指 `finetune_dataset/`；prompt 用 `prompt_map.json` 三条。
 3. **dev-hub 任务包**：按 §2 方案 v2 出 spec（router/bridge/voicemode 插件三件+测试矩阵+回滚）。
 4. **watchdog runbook v4 修订**（判据 C）——与训练并行可做。

@@ -1,0 +1,1291 @@
+[
+ {
+  "wav": "p2_047.wav",
+  "src": "p2",
+  "start": 1030.5,
+  "dur": 4.35,
+  "whisper": "ブラックオニキストの合戦の時間だね今度こそ勝つよ",
+  "mimo": "ブラックオニキスの滑走路时间だね。今度こそ胜つよ。",
+  "sim": 0.723,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_048.wav",
+  "src": "p2",
+  "start": 1043.0,
+  "dur": 8.91,
+  "whisper": "6時!ライブの時間だよ!やっちゃおう!楽しみすぎて踊りだしちゃいそう!かぐやも踊らっかな?",
+  "mimo": "6时！来分の时间だよ。やっちゃう。楽しみすぎて踊り出しちゃいそう。カクヤも惊くの。",
+  "sim": 0.632,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya', 'yachiyo'] vs ['yachiyo']"
+  ]
+ },
+ {
+  "wav": "p2_049.wav",
+  "src": "p2",
+  "start": 1060.8,
+  "dur": 2.91,
+  "whisper": "3人でお散歩でもしない?うん、いいよ",
+  "mimo": "三人でお散歩でもしない？うん、いいよ。",
+  "sim": 0.938,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_050.wav",
+  "src": "p2",
+  "start": 1108.0,
+  "dur": 2.31,
+  "whisper": "つくよみの夜景が大好きなのです",
+  "mimo": "月夜の夜景が大好きなので。",
+  "sim": 0.741,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_051.wav",
+  "src": "p2",
+  "start": 1154.9,
+  "dur": 2.04,
+  "whisper": "またやっちょと遊んでねー",
+  "mimo": "我第一捉到阿桑的呢。",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00",
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_001.wav",
+  "src": "p2",
+  "start": 143.9,
+  "dur": 2.85,
+  "whisper": "今宵もみんなを誘っちゃうよ",
+  "mimo": "可有有没有一首那秋哟？",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00"
+  ]
+ },
+ {
+  "wav": "p2_002.wav",
+  "src": "p2",
+  "start": 151.6,
+  "dur": 4.53,
+  "whisper": "お?今日はご機嫌かな?よきかな?",
+  "mimo": "お、今日はご机嫌かな、良きかな。",
+  "sim": 0.846,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_003.wav",
+  "src": "p2",
+  "start": 156.9,
+  "dur": 2.55,
+  "whisper": "おはよう!朝ごはん食べた?",
+  "mimo": "おはよう。朝ご饭食べた？",
+  "sim": 0.857,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_004.wav",
+  "src": "p2",
+  "start": 163.8,
+  "dur": 4.11,
+  "whisper": "いつか味が再現できるようにアップデートしたいなぁ",
+  "mimo": "いつか、自己再现できるようにアップデートしたいな。",
+  "sim": 0.844,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_005.wav",
+  "src": "p2",
+  "start": 168.5,
+  "dur": 1.74,
+  "whisper": "ごちそうさまでした。",
+  "mimo": "Got star, somebody star.",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00"
+  ]
+ },
+ {
+  "wav": "p2_006.wav",
+  "src": "p2",
+  "start": 178.1,
+  "dur": 1.77,
+  "whisper": "ずいぶんとお疲れみたいだね。",
+  "mimo": "随分と疲れみたいだね。",
+  "sim": 0.696,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_007.wav",
+  "src": "p2",
+  "start": 182.9,
+  "dur": 2.4,
+  "whisper": "やっちゃな歌声聞いてって",
+  "mimo": "やっちゃんの歌声闻いてて。",
+  "sim": 0.75,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_008.wav",
+  "src": "p2",
+  "start": 186.5,
+  "dur": 4.41,
+  "whisper": "神々のみんなが楽しそうだとやっちょも嬉しいよ",
+  "mimo": "神々のみんなが楽しそうだと、やっちゃんも嬉しいよ。",
+  "sim": 0.933,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_009.wav",
+  "src": "p2",
+  "start": 195.7,
+  "dur": 3.54,
+  "whisper": "八千夜のライブたくさん見てくれたら嬉しいな",
+  "mimo": "一応のライブ、たくさん见てくれたら嬉しいな。",
+  "sim": 0.829,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_010.wav",
+  "src": "p2",
+  "start": 221.4,
+  "dur": 2.01,
+  "whisper": "風情増し増しでいくよー!",
+  "mimo": "くせえ、増していくよ。",
+  "sim": 0.526,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_011.wav",
+  "src": "p2",
+  "start": 224.2,
+  "dur": 2.37,
+  "whisper": "楽しまなきゃ!ソンソン!",
+  "mimo": "楽しまなきゃ、ソンソン。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_012.wav",
+  "src": "p2",
+  "start": 227.2,
+  "dur": 2.58,
+  "whisper": "八千代カップ始まるよー!",
+  "mimo": "やちおカブ始まるよ。",
+  "sim": 0.526,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_013.wav",
+  "src": "p2",
+  "start": 541.8,
+  "dur": 2.97,
+  "whisper": "仮想空間つくよみへようこそー!",
+  "mimo": "家族感强みえ、ようこそ。",
+  "sim": 0.435,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.43"
+  ]
+ },
+ {
+  "wav": "p2_014.wav",
+  "src": "p2",
+  "start": 545.5,
+  "dur": 2.79,
+  "whisper": "管理人のルナミヤチオでーす",
+  "mimo": "香辛のロナミアチューデス。",
+  "sim": 0.348,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.35"
+  ]
+ },
+ {
+  "wav": "p2_015.wav",
+  "src": "p2",
+  "start": 560.8,
+  "dur": 4.08,
+  "whisper": "ヤチオカップに勝てば、ヤチオとコラボライブできるよ!",
+  "mimo": "炎上カップに胜てば、炎とコラボライブできるよ。",
+  "sim": 0.756,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_016.wav",
+  "src": "p2",
+  "start": 570.1,
+  "dur": 1.65,
+  "whisper": "よきかなよきかな。",
+  "mimo": "よきかな、よきかな。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_017.wav",
+  "src": "p2",
+  "start": 578.1,
+  "dur": 3.27,
+  "whisper": "一緒にハッピーになってめでたししちゃおう!",
+  "mimo": "一瞬にハッピーニンラッコ、メレタシショ！",
+  "sim": 0.278,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.28"
+  ]
+ },
+ {
+  "wav": "p2_018.wav",
+  "src": "p2",
+  "start": 582.5,
+  "dur": 1.5,
+  "whisper": "八千代とお話ししてくれる?",
+  "mimo": "一绪と话してくれる？",
+  "sim": 0.571,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_019.wav",
+  "src": "p2",
+  "start": 585.0,
+  "dur": 2.1,
+  "whisper": "神々のみんなの願い事が",
+  "mimo": "神神のみんなの愿い事が。",
+  "sim": 0.818,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_020.wav",
+  "src": "p2",
+  "start": 589.7,
+  "dur": 1.68,
+  "whisper": "やっちょの願い事?",
+  "mimo": "一応の愿い事？",
+  "sim": 0.429,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.43",
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_021.wav",
+  "src": "p2",
+  "start": 594.1,
+  "dur": 1.62,
+  "whisper": "それは秘密なのです",
+  "mimo": "それは秘密なのです。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_022.wav",
+  "src": "p2",
+  "start": 598.8,
+  "dur": 1.74,
+  "whisper": "大切な人との時間も。",
+  "mimo": "大切な人との时间も。",
+  "sim": 0.778,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_023.wav",
+  "src": "p2",
+  "start": 603.6,
+  "dur": 2.22,
+  "whisper": "全部全部宝物になるからね",
+  "mimo": "全部全部宝物になるからね。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_024.wav",
+  "src": "p2",
+  "start": 607.3,
+  "dur": 1.56,
+  "whisper": "やっちょのライブ見に来てね",
+  "mimo": "Yep, tonight I have a mini dinner.",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00",
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_025.wav",
+  "src": "p2",
+  "start": 610.1,
+  "dur": 1.5,
+  "whisper": "大航海はさせないから!",
+  "mimo": "太高がいはさせないから。",
+  "sim": 0.667,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_026.wav",
+  "src": "p2",
+  "start": 620.5,
+  "dur": 1.71,
+  "whisper": "さあ、縁も竹縄",
+  "mimo": "は、演目は竹名。",
+  "sim": 0.167,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.17"
+  ]
+ },
+ {
+  "wav": "p2_027.wav",
+  "src": "p2",
+  "start": 622.8,
+  "dur": 2.4,
+  "whisper": "次のライブも絶対来てねー!",
+  "mimo": "下のライブも絶対来てね。",
+  "sim": 0.909,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_028.wav",
+  "src": "p2",
+  "start": 630.8,
+  "dur": 2.31,
+  "whisper": "いつもいっぱい頑張ってるんだね",
+  "mimo": "いつもいっぱい頑张ってるんだね。",
+  "sim": 0.933,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_029.wav",
+  "src": "p2",
+  "start": 634.0,
+  "dur": 1.8,
+  "whisper": "やっちょはいつでも一緒だから。",
+  "mimo": "やっちゃんはいつでも一绪だから。",
+  "sim": 0.828,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_030.wav",
+  "src": "p2",
+  "start": 636.4,
+  "dur": 1.56,
+  "whisper": "何かあったら話してみてね",
+  "mimo": "何かあったら话してみてね。",
+  "sim": 0.917,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_031.wav",
+  "src": "p2",
+  "start": 640.7,
+  "dur": 2.07,
+  "whisper": "ごめん閉じっちゃった",
+  "mimo": "我咩都知咋吧。",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00"
+  ]
+ },
+ {
+  "wav": "p2_032.wav",
+  "src": "p2",
+  "start": 643.8,
+  "dur": 1.65,
+  "whisper": "キラキラのかぐや姫は、",
+  "mimo": "チラチラの欠片纸目は。",
+  "sim": 0.4,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.40",
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_033.wav",
+  "src": "p2",
+  "start": 650.0,
+  "dur": 3.0,
+  "whisper": "もうこれで終わってもいいって思ってたのに",
+  "mimo": "もうこれで终わってもいいって思ってたのに。",
+  "sim": 0.95,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_034.wav",
+  "src": "p2",
+  "start": 655.7,
+  "dur": 2.22,
+  "whisper": "またいろはと一緒にパンケーキ",
+  "mimo": "また色はと一绪にパンケーキ。",
+  "sim": 0.8,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_035.wav",
+  "src": "p2",
+  "start": 662.4,
+  "dur": 2.43,
+  "whisper": "この物語を最後まで見届けてね。",
+  "mimo": "この物语を最后まで见届けてね。",
+  "sim": 0.786,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_036.wav",
+  "src": "p2",
+  "start": 671.6,
+  "dur": 3.66,
+  "whisper": "いつももらってばっかりだから今日は遅れて嬉しいな",
+  "mimo": "いつももらってばかりだから、今日は送れて嬉しいな。",
+  "sim": 0.936,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_037.wav",
+  "src": "p2",
+  "start": 687.0,
+  "dur": 3.87,
+  "whisper": "バレンタイン恒例やっちょのオリジナルチョコ",
+  "mimo": "Valentine Curry, yachana original choco.",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00",
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "p2_038.wav",
+  "src": "p2",
+  "start": 691.4,
+  "dur": 3.15,
+  "whisper": "今年はめんどく味!",
+  "mimo": "私は、面で详しい。",
+  "sim": 0.133,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.13"
+  ]
+ },
+ {
+  "wav": "p2_039.wav",
+  "src": "p2",
+  "start": 701.8,
+  "dur": 2.79,
+  "whisper": "今日はホワイトデーなんだけど…",
+  "mimo": "今日は微笑でいいなんだけど。",
+  "sim": 0.615,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_040.wav",
+  "src": "p2",
+  "start": 705.1,
+  "dur": 2.07,
+  "whisper": "お返しは何かな?",
+  "mimo": "Okay, しは什么呢かな。",
+  "sim": 0.444,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.44"
+  ]
+ },
+ {
+  "wav": "p2_041.wav",
+  "src": "p2",
+  "start": 709.2,
+  "dur": 5.13,
+  "whisper": "ハッピーハロウィーンヨッチはどんな仮装をしようかなぁ",
+  "mimo": "Happy Halloween! やつはどんな服装をしようかな。",
+  "sim": 0.423,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.42",
+   "name_mismatch:['yachiyo'] vs -",
+   "garbage:katakana_run:ハッピーハロウィーンヨッチ"
+  ]
+ },
+ {
+  "wav": "p2_042.wav",
+  "src": "p2",
+  "start": 724.1,
+  "dur": 2.4,
+  "whisper": "一年が終わっちゃうねー",
+  "mimo": "一年后，我救你。",
+  "sim": 0.25,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.25"
+  ]
+ },
+ {
+  "wav": "p2_043.wav",
+  "src": "p2",
+  "start": 731.1,
+  "dur": 1.5,
+  "whisper": "カウントダウンライブで",
+  "mimo": "Count down, right, baby.",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00",
+   "garbage:katakana_run:カウントダウンライブ"
+  ]
+ },
+ {
+  "wav": "p2_044.wav",
+  "src": "p2",
+  "start": 733.1,
+  "dur": 1.77,
+  "whisper": "一緒に新年迎えよっか。",
+  "mimo": "一身的新人，麦卡优卡。",
+  "sim": 0.211,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.21"
+  ]
+ },
+ {
+  "wav": "p2_045.wav",
+  "src": "p2",
+  "start": 763.7,
+  "dur": 2.55,
+  "whisper": "ブレイクタイムといたしましょう",
+  "mimo": "破壊タイムといたしましょう。",
+  "sim": 0.786,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "p2_046.wav",
+  "src": "p2",
+  "start": 947.7,
+  "dur": 3.03,
+  "whisper": "なんか歌いたくなっちゃったなぁ",
+  "mimo": "のん、具体なくなっちゃったの。",
+  "sim": 0.571,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_019.wav",
+  "src": "bd",
+  "start": 1025.2,
+  "dur": 1.71,
+  "whisper": "運命に干渉はできない",
+  "mimo": "姑妹，你讲说话的囡仔。",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00"
+  ]
+ },
+ {
+  "wav": "bd_020.wav",
+  "src": "bd",
+  "start": 1027.6,
+  "dur": 1.77,
+  "whisper": "でも何かできたかもしれない。",
+  "mimo": "でも何かできたかもしれない。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_021.wav",
+  "src": "bd",
+  "start": 1030.2,
+  "dur": 3.63,
+  "whisper": "八つにできるのは無責任な声かけだけだったのです。",
+  "mimo": "野中にできるのは、无责任な声かけだけだったのです。",
+  "sim": 0.826,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_022.wav",
+  "src": "bd",
+  "start": 1047.8,
+  "dur": 3.69,
+  "whisper": "思いだったくせにやっちょが保証しちゃう",
+  "mimo": "やあ、回忆がたくさんに。やつが保证した。",
+  "sim": 0.389,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.39",
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_023.wav",
+  "src": "bd",
+  "start": 1211.3,
+  "dur": 2.73,
+  "whisper": "Allislostを早送りで終わらせるのが",
+  "mimo": "オールイズロストを早送りで终わらせるのか。",
+  "sim": 0.5,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_024.wav",
+  "src": "bd",
+  "start": 1360.0,
+  "dur": 2.34,
+  "whisper": "そばにいるのがやっちょじゃ不満かね?",
+  "mimo": "とばにいるのがやっつうじゃ不満かね。",
+  "sim": 0.824,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_025.wav",
+  "src": "bd",
+  "start": 1403.4,
+  "dur": 2.61,
+  "whisper": "かぐやが帰るまでのお話しか知らないから",
+  "mimo": "カルラが帰るまでのお话しか知らないから。",
+  "sim": 0.789,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_026.wav",
+  "src": "bd",
+  "start": 1406.6,
+  "dur": 1.74,
+  "whisper": "この時すっごく怖かったんだよ。",
+  "mimo": "あの时、すごく怖かったんだよ。",
+  "sim": 0.815,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_027.wav",
+  "src": "bd",
+  "start": 1411.4,
+  "dur": 2.76,
+  "whisper": "自分がどうなるかもわからなくて引きこもってました。",
+  "mimo": "自分がどうなるかもわからなくて、引き留まってました。",
+  "sim": 0.917,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_028.wav",
+  "src": "bd",
+  "start": 1450.9,
+  "dur": 6.18,
+  "whisper": "なんか自分がされてるのはまあいいかって思っちゃってえへへよくないよ",
+  "mimo": "のと、自分が被ってるのは、まあ一か、青ちゃって、良くないよ。",
+  "sim": 0.621,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_029.wav",
+  "src": "bd",
+  "start": 1477.8,
+  "dur": 3.27,
+  "whisper": "一部だけどつくよみのサーバールームも兼ねてるんだ",
+  "mimo": "一部だけど、月读のサーバルも置かねてるんだ。",
+  "sim": 0.75,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_030.wav",
+  "src": "bd",
+  "start": 1493.3,
+  "dur": 2.13,
+  "whisper": "普通の人は入れないんだよかぐや",
+  "mimo": "その人は入らないんだよ。",
+  "sim": 0.692,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_031.wav",
+  "src": "bd",
+  "start": 1560.2,
+  "dur": 7.5,
+  "whisper": "ここではでかい医師さんに責任なすりつけてるけど実際には難易度が高すぎたってことなんだよね",
+  "mimo": "ここではでかい石を沟に结びつけてるけど、実际には内里が流されたってことなんだよね。",
+  "sim": 0.675,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_032.wav",
+  "src": "bd",
+  "start": 1595.3,
+  "dur": 4.14,
+  "whisper": "元光る竹のナノマシンが十分に排出できなかった場合",
+  "mimo": "また、スカル竹のナノマシンが十分に繁殖できなかった场合。",
+  "sim": 0.72,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_033.wav",
+  "src": "bd",
+  "start": 1600.0,
+  "dur": 3.6,
+  "whisper": "受肉したナノマシン相手に情報の並列化ができるんだよね",
+  "mimo": "シルクストの饮ましを相手に情报の攻略ができるんだよね。",
+  "sim": 0.538,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_034.wav",
+  "src": "bd",
+  "start": 1604.3,
+  "dur": 1.71,
+  "whisper": "だからイヌドアジとかぐやは",
+  "mimo": "だから犬同士の壁は。",
+  "sim": 0.364,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.36",
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_035.wav",
+  "src": "bd",
+  "start": 1606.5,
+  "dur": 2.7,
+  "whisper": "この時はほぼ同一の個体みたいなものなんだ。",
+  "mimo": "この手はほぼ同一の答いみたいなものなんだ。",
+  "sim": 0.85,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_036.wav",
+  "src": "bd",
+  "start": 1610.1,
+  "dur": 2.73,
+  "whisper": "多くの人と繋がる力を手に入れた。",
+  "mimo": "多くの人とつながる力を手に得た。",
+  "sim": 0.8,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_037.wav",
+  "src": "bd",
+  "start": 1618.8,
+  "dur": 1.92,
+  "whisper": "自分で調べろかすー",
+  "mimo": "次は弟子のベルカさん。",
+  "sim": 0.0,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.00"
+  ]
+ },
+ {
+  "wav": "bd_038.wav",
+  "src": "bd",
+  "start": 1623.0,
+  "dur": 3.15,
+  "whisper": "ゴーに言ってはゴーに従えだったのです",
+  "mimo": "今日では今日に従いだったのです。",
+  "sim": 0.581,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_039.wav",
+  "src": "bd",
+  "start": 1636.1,
+  "dur": 4.41,
+  "whisper": "歴史を変えてしまうと、イロハを助ける八千代が生まれなくなってしまう。",
+  "mimo": "历史を変えてしまうと、ブロハを助ける余地をかは生まれなくなってしまう。",
+  "sim": 0.8,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha', 'yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_040.wav",
+  "src": "bd",
+  "start": 1641.4,
+  "dur": 4.92,
+  "whisper": "私たち月の民はそれをすることができないように魂にルールを刻まれてるの",
+  "mimo": "私と月の神は、それをすることができないように魂にルールを刻まれてるの。",
+  "sim": 0.923,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_041.wav",
+  "src": "bd",
+  "start": 1647.1,
+  "dur": 3.0,
+  "whisper": "詳細は複雑だからニュアンスだけ説明したよー。",
+  "mimo": "小さいは子犬だから、庭だけ说明したよ。",
+  "sim": 0.541,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_042.wav",
+  "src": "bd",
+  "start": 1666.5,
+  "dur": 2.64,
+  "whisper": "ヒロハがなんて言うのか知らないから怖くて",
+  "mimo": "何がかなっているのか知らないから怖くて。",
+  "sim": 0.718,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_043.wav",
+  "src": "bd",
+  "start": 1670.3,
+  "dur": 2.19,
+  "whisper": "忘れてもいいなんて言ってごめんね。",
+  "mimo": "忘れてもいいなんて言ってごめんね。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_044.wav",
+  "src": "bd",
+  "start": 1695.5,
+  "dur": 2.85,
+  "whisper": "私にとってはここでもうハッピーエンドだったんだよ。",
+  "mimo": "私にとってはここでもハッピーエンドだったんだよ。",
+  "sim": 0.978,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_045.wav",
+  "src": "bd",
+  "start": 1729.1,
+  "dur": 6.57,
+  "whisper": "かぐやのママだったいろはの理想のママが八千代ででもいろはが八千代のママにもなっちゃった物語",
+  "mimo": "カルヤのままだったイロハの理想のままの野球で、でもイロハが野球のままにもなった后の物语。",
+  "sim": 0.437,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.44",
+   "name_mismatch:['iroha', 'kaguya', 'yachiyo'] vs ['iroha']"
+  ]
+ },
+ {
+  "wav": "bd_046.wav",
+  "src": "bd",
+  "start": 1764.6,
+  "dur": 1.68,
+  "whisper": "褒めて使わしたよー",
+  "mimo": "褒め使わしたよ。",
+  "sim": 0.933,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_047.wav",
+  "src": "bd",
+  "start": 1773.4,
+  "dur": 2.22,
+  "whisper": "何も置いてないブランクのシーンだよ",
+  "mimo": "何も言ってない。ブランコの诗だよ。",
+  "sim": 0.71,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_048.wav",
+  "src": "bd",
+  "start": 1776.5,
+  "dur": 1.59,
+  "whisper": "パセットを置く前の空間",
+  "mimo": "设定を组みの空间。",
+  "sim": 0.316,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.32"
+  ]
+ },
+ {
+  "wav": "bd_049.wav",
+  "src": "bd",
+  "start": 1801.9,
+  "dur": 3.24,
+  "whisper": "こうなるとやっちゅもさすがに欲が出たよねー",
+  "mimo": "ほんなら、昨夜もさすがによく言われたよね。",
+  "sim": 0.462,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.46"
+  ]
+ },
+ {
+  "wav": "bd_001.wav",
+  "src": "bd",
+  "start": 221.6,
+  "dur": 3.57,
+  "whisper": "みんなにとっては楽園だったから悪いとこじゃないんだよね。",
+  "mimo": "ミンナにとっては楽园だったから、悪いところじゃないんだよね。",
+  "sim": 0.836,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_002.wav",
+  "src": "bd",
+  "start": 247.1,
+  "dur": 3.93,
+  "whisper": "一回帰らないとイロハを支えるやっちょになれなかったんだから",
+  "mimo": "一回帰らないと、井戸がお腹ややこに出なかったんだから。",
+  "sim": 0.63,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha', 'yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_003.wav",
+  "src": "bd",
+  "start": 251.6,
+  "dur": 1.68,
+  "whisper": "これが一番よかったんだよ",
+  "mimo": "これが一番良かったんだよ。",
+  "sim": 0.917,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_004.wav",
+  "src": "bd",
+  "start": 254.5,
+  "dur": 1.62,
+  "whisper": "心の底からそう思ってる",
+  "mimo": "体底からそう思って。",
+  "sim": 0.8,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_005.wav",
+  "src": "bd",
+  "start": 468.2,
+  "dur": 2.34,
+  "whisper": "イルハとツクヨミで会った時ももちろんなんだけど",
+  "mimo": "井戸端作る意味で会った时ももちろんなんだけど。",
+  "sim": 0.622,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha', 'tsukuyomi'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_006.wav",
+  "src": "bd",
+  "start": 471.3,
+  "dur": 2.1,
+  "whisper": "かぐやがあんまりにも輝いてて。",
+  "mimo": "长やか、あんまりにも輝いてて。",
+  "sim": 0.815,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_007.wav",
+  "src": "bd",
+  "start": 484.9,
+  "dur": 3.9,
+  "whisper": "よっちおは寝てるときに分身のAIと記憶を同期するから",
+  "mimo": "や、うちは寝てるときに分身のAIが活动するから。",
+  "sim": 0.708,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['yachiyo'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_008.wav",
+  "src": "bd",
+  "start": 489.3,
+  "dur": 1.77,
+  "whisper": "かぐやを見たのはこれが最初。",
+  "mimo": "かがやみたのはこれが最初。",
+  "sim": 0.8,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_009.wav",
+  "src": "bd",
+  "start": 492.2,
+  "dur": 2.07,
+  "whisper": "あまりにも今の自分と違って、",
+  "mimo": "あまりに今の自分と违って。",
+  "sim": 0.88,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_010.wav",
+  "src": "bd",
+  "start": 495.3,
+  "dur": 1.95,
+  "whisper": "純粋で弾けるみたいで",
+  "mimo": "じゃん、ついで始けるみたいで。",
+  "sim": 0.609,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_011.wav",
+  "src": "bd",
+  "start": 571.5,
+  "dur": 1.71,
+  "whisper": "イロハ育ててくれたもんね。",
+  "mimo": "surrenが育ててくれたもんね。",
+  "sim": 0.643,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_012.wav",
+  "src": "bd",
+  "start": 647.3,
+  "dur": 2.07,
+  "whisper": "朝日もいろいろあったからねー",
+  "mimo": "朝日もいろいろあったからね。",
+  "sim": 1.0,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_013.wav",
+  "src": "bd",
+  "start": 845.2,
+  "dur": 1.5,
+  "whisper": "あれはもう届いたから。",
+  "mimo": "我はもう届いたから。",
+  "sim": 0.842,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_014.wav",
+  "src": "bd",
+  "start": 869.2,
+  "dur": 1.98,
+  "whisper": "この時をずーっと待ってた",
+  "mimo": "あ、そう、ずっと待ってた。",
+  "sim": 0.667,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_015.wav",
+  "src": "bd",
+  "start": 873.4,
+  "dur": 2.88,
+  "whisper": "イロハとの楽しい思い出は全部おしまい。",
+  "mimo": "井戸端の楽しい思い出は全部おしまい。",
+  "sim": 0.8,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_016.wav",
+  "src": "bd",
+  "start": 940.2,
+  "dur": 2.28,
+  "whisper": "階級や規律を重んじる感じ?",
+  "mimo": "开局や斩立を问わじる感じ。",
+  "sim": 0.5,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bd_017.wav",
+  "src": "bd",
+  "start": 966.6,
+  "dur": 2.43,
+  "whisper": "それがいろはママのコミュニケーションなんだよね。",
+  "mimo": "それが色は妈妈のコミュニケーションなんだよね。",
+  "sim": 0.837,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha'] vs -"
+  ]
+ },
+ {
+  "wav": "bd_018.wav",
+  "src": "bd",
+  "start": 992.1,
+  "dur": 2.22,
+  "whisper": "ファンにそういう性格なのかもしれないよ",
+  "mimo": "かに沿う最角などかもしれないよ。",
+  "sim": 0.588,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bc_006.wav",
+  "src": "bc",
+  "start": 81.18,
+  "dur": 3.75,
+  "whisper": "じゃあ今日はガチ勢のいろはちゃんに進行をお願いしちゃおうかな",
+  "mimo": "じゃあ今日は、がっちりの色はじゃあ2000号をねがいしようかな。",
+  "sim": 0.5,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['iroha'] vs -"
+  ]
+ },
+ {
+  "wav": "bc_007.wav",
+  "src": "bc",
+  "start": 92.94,
+  "dur": 1.5,
+  "whisper": "それでは最後まで",
+  "mimo": "それでは最后まで。",
+  "sim": 0.875,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bc_008.wav",
+  "src": "bc",
+  "start": 95.13,
+  "dur": 2.07,
+  "whisper": "超かぐや姫をお楽しみください",
+  "mimo": "どうか、月夜をお楽しみください。",
+  "sim": 0.714,
+  "suspicious": true,
+  "reasons": [
+   "name_mismatch:['kaguya'] vs -"
+  ]
+ },
+ {
+  "wav": "bc_002.wav",
+  "src": "bc",
+  "start": 20.22,
+  "dur": 1.65,
+  "whisper": "細かいテクニックじゃなくて、",
+  "mimo": "おまかに特に部じゃなくて。",
+  "sim": 0.48,
+  "suspicious": true,
+  "reasons": [
+   "low_sim:0.48"
+  ]
+ },
+ {
+  "wav": "bc_003.wav",
+  "src": "bc",
+  "start": 22.32,
+  "dur": 2.52,
+  "whisper": "いろんなことを忘れないことが大事なのです。",
+  "mimo": "这样的こと、忘れないことが大事なので。",
+  "sim": 0.757,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bc_004.wav",
+  "src": "bc",
+  "start": 40.98,
+  "dur": 3.15,
+  "whisper": "転んだりむくれたり、たくさん笑って泣いて。",
+  "mimo": "落とんだり、のくれたり、たくさん笑って泣いて。",
+  "sim": 0.872,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bc_005.wav",
+  "src": "bc",
+  "start": 44.88,
+  "dur": 3.87,
+  "whisper": "そういうのが増えると忘れられないことうなぎの山登りなのです",
+  "mimo": "から的话ると、忘れられないこと、粉きの山登りなのです。",
+  "sim": 0.679,
+  "suspicious": false,
+  "reasons": []
+ },
+ {
+  "wav": "bc_001.wav",
+  "src": "bc",
+  "start": 0.93,
+  "dur": 3.18,
+  "whisper": "本日はご来場いただき誠にありがとうございます。",
+  "mimo": "本日はご来场いただき、誠にありがとうございます。",
+  "sim": 0.955,
+  "suspicious": false,
+  "reasons": []
+ }
+]
