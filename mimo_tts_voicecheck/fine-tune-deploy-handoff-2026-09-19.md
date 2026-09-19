@@ -94,3 +94,23 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 **HF/ModelScope 数据集（假货）**：ichayc/Frieren1.1=两段 79s×2+四份 Copia 重复，whisper 转写呈「私は、私は」合成伪影，ECAPA 对真人早見锚仅 0.16-0.23（真人自比 0.97）——AI 生成物，弃；mextre/frieren=6 个重复 mp3 垃圾包。**无任何真早見原始数据集**（只有 RVC/VITS 权重）。
 **radiko**：M&D 电台正片唯一官方回听渠道（日本 IP+账号，AAC~60k 估 10-14k），非角色声，中低优先级。
 **结论：宽带「说话声」免费路径穷尽——BD 通常版从「最优解」升格为「唯一解」**；网易云 VIP 的现实用途=无损全曲 Remember/星降る海（宽带「唱」，12% 样片实验已证混入无害无益，更高占比可试但唱歌语域风险已知）。
+
+## 3.4 第九班收口·下一班交接（2026-09-20 02:0x，本 session 关闭）
+
+**模型资产**（全在 `F:\AIPart\GPT-SoVITS\GPT-SoVITS-v2pro-20250604\`）：
+| 模型 | 配方 | 地位 |
+|---|---|---|
+| `yachiyo_A_char` | 纯角色 106 行 | **现役交付候选**（用户一轮判词胜出） |
+| `yachiyo_B_mix` / `A_enh` / `A_song` | 同CV 34% / VoiceFixer / 12%样片 | 实验·已判负归档 |
+| `yachiyo_A_songfull` | 106 窄带+70 歌唱=58% 宽带 | **等 ASF_* 判词**（半有效：+3~13dB 句间不稳） |
+
+**核心定案（勿重跑）**：电话音=**训练带宽×prompt 带宽双因子锁**；歌唱宽带只部分迁移到说话；宽带 prompt +13dB 但唯一现货（电影旁白）带混响。宽带「说话」语料=完全解锁唯一项（BD）。
+
+**下一班队列（按序）**：
+1. **用户判词**：ASF_s{1,2,3}_narrow + ASF_s2_wideprompt 四条（outputs/ab_finetune_2026-09-19/）——保留 songfull 配方 or 维持 A。
+2. **BD 决策**（用户）：买通常版 SNCL-00122（≈￥365 animate+代拍+EMS）+外置蓝光光驱（**product-research 另窗选型，本机 0 光驱**）→ 到手 MakeMKV 抓取（**取 5.1ch 中置**，v1.18.4 已支持 AACS v82）→ ffprobe 验带宽 → 宽带说话数据集（现有管线全套复用：切分/ECAPA/whisper/list）→ 重训（宽带占比目标 65%+，prompt 也要挑宽带说话段）。
+3. **dev-hub 部署包**（不等 BD 也行）：按 §2 方案 v2 出 spec——router/bridge/voicemode 三件+测试矩阵+回滚；权重=判词胜出者；**bridge 侧预留宽带 prompt 三档**（prompt_map.json 种子已有，注意 prompt ≥3s 下限）。
+4. **12-26 ツクヨミ感謝祭 YT 直播录档**（yt-dlp 配方在 §3.3，临近设提醒）。
+5. 挂账：无（两仓全推至 a864191 / 258e41e）。
+
+**本 session 最后新增工具**：`_tmp/ncmdump.py`（ncm 解密，参照 pyNCMDUMP MIT）、`tools_p2_mining/songfull_build.py`（lrc 歌词时间戳切歌）、网易云凭据在 LifeOS `reference/secrets/netease-music-credentials.md`（gitignored，用户移交保管）。超清母带已评估**不需要**（训练 32k 上限，320k 足量）。
