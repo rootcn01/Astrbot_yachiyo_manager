@@ -32,10 +32,10 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 
 ## 3. 下一 session 工作队列（按序）
 
-1. **数据集挖掘**（最长前置，工具全在位）：P2 全量八千代行（`tools_p2_mining/` 四脚本管线：切分→F0+声纹评分(recutB/新V2做锚)→逐条 ASR 归人）+ BD 评论轨八千代份额（31min 三人谈，同管线跑）。目标 10 分钟级干净 solo 语料。**归人标志**：神々のみんな/良きかな/物語を見届ける=她；かぐや自称第三人称=かぐや；かけあい段会骗过包络评分需 ASR 复核。
-2. **训练**：本机 GPT-SoVITS v2ProPlus 整合包（4060Ti 8G：SoVITS bs1/GPT bs2，不跑 DPO；2-3h）或云新人券（趋动云 ¥168，0.5-2 卡时）。训练集另挑 3 条 prompt 片段（happy/tender/default）。
+1. ~~**数据集挖掘**~~ ✅ **2026-09-19 第二班完成**：`finetune_dataset/` 108 片 / 298s（p2 角色 51 / bd 谈话 49 / bc 正式 8）+ 3 prompt + `yachiyo.list`（faster-whisper 正日文）+ README（含再生管线与扩量路径）。**翻案**：P2 整包=八千代语音包（ECAPA 定案，resemblyzer 无区分度弃用）；BD 三簇=三 CV 各一，早見=c2；MiMo ASR 只能 auto。扩量首选=买 BD 特装版。
+2. **训练**：本机 GPT-SoVITS v2ProPlus 整合包（4060Ti 8G：SoVITS bs1/GPT bs2，不跑 DPO；2-3h）或云新人券（趋动云 ¥168，0.5-2 卡时）。数据集直接指 `finetune_dataset/`；prompt 用 `prompt_map.json` 三条。
 3. **dev-hub 任务包**：按 §2 方案 v2 出 spec（router/bridge/voicemode 插件三件+测试矩阵+回滚）。
-4. **watchdog runbook v4 修订**（判据 C）——与数据挖掘并行可做。
+4. **watchdog runbook v4 修订**（判据 C）——与训练并行可做。
 5. 验收：三句 AB（bridge vs MiMo V2）用户盲听终审；延迟 p50≤5s/p95≤8s；回落≤15s 无感。
 
 ## 4. 遗留与挂账
@@ -54,5 +54,14 @@ AstrBot 插件（config base_url → http://172.19.0.1:8800/v1）
 4. 单一参考混 register=毒药（v2.1 炸音，HF 气声被学走）；register 差异用 prompt 映射解决。
 5. BOM 纪律：cmd_config/插件 config 读 utf-8-sig 写普通 utf-8。
 6. heredoc 后禁接 `||`（本窗又踩一次）。
+
+## 6. 第二班追加教训（2026-09-19 晚）
+
+7. **resemblyzer 在本域无区分度**：不同 CV 的同域音频也能 0.9（锚身份都会被带偏）——说话人归人一律 ECAPA（早見跨语域基线 0.331，同簇 0.6+，区分度够）。
+8. **MiMo ASR language 强制码（ja/jpn/ja-JP/Japanese/jp）全部 400**，只能 auto（中日英乱漂）——训练转写走 faster-whisper large-v3-turbo（language=ja，CPU int8 可跑，质量完美）。
+9. **MiMo ASR 并发 4 就吃 429**（且空内容返回=音乐/噪声段，不是错误）；断点续跑缓存必须跳过 `[ERR` 行。
+10. ECAPA 权重 Windows 取回：speechbrain fetch 硬编码 symlink 会 1314 失败——hf_hub_download 后手动拷 `_tmp/ecapa/`（label_encoder.txt→label_encoder.ckpt 改名）。
+11. **块纯度校准数字**：1.6s 块对锚余弦 solo=0.51-0.78、他人/串音多 <0.35 → 规则 utterance≥0.40 + 最差块≥0.35。
+12. torchaudio 2.11 load 要 torchcodec——直接 wave 模块读+torchaudio.functional.resample 绕开。
 
 —— 2026-09-19 ZCode 窗交接。方案对抗全记录在当窗对话；本文件为唯一执行依据。

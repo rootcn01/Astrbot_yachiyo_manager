@@ -1,0 +1,18 @@
+{
+ "happy": {
+  "wav": "prompt_happy.wav",
+  "text": "神々のみんなが楽しそうだとやっちょも嬉しいよ",
+  "train_wav": "wav/p2_008.wav"
+ },
+ "tender": {
+  "wav": "prompt_tender.wav",
+  "text": "いつもいっぱい頑張ってるんだね",
+  "train_wav": "wav/p2_028.wav"
+ },
+ "default": {
+  "wav": "prompt_default.wav",
+  "text": "つくよみの夜景が大好きなのです",
+  "train_wav": "wav/p2_050.wav"
+ },
+ "_note": "style→MiMo style_context 关键词映射种子(部署方案§2.3)；miss 落 default；文本=faster-whisper 口径"
+}
