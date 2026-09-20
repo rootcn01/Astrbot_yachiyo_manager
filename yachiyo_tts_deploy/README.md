@@ -76,3 +76,10 @@ BD 宽带语料重训 / prompt_map sad 升真哀腔档 / 12-26 感謝祭 YT 录�
 - **bridge 语种探测**：`detect_text_lang()`——文本含假名→ja，纯汉字无假名→zh（防"中文被日语音读"：生产首例 神明大人→しんめいだいじん，两套 ASR 互打架）。参考 prompt_lang 恒 ja。单测 25/25，zh 路径 ASR 回环关键句逐字还原。commit 3db6027。
 - **导演 provider 切换**：`ai_style_director_provider_id` '' → `阿里百炼/qwen3.8-flash`（原默认 qwen3.8-max 免费额度 403；实测百炼 flash 有额度、qwen3.7-plus/glm-5.2/max 均耗尽、deepseek 系全活）。备份 `.bak_director_20260920`。
 - **栈看门狗**：计划任务 `YachiyoStackWatch`（5 分钟周期，`stack_watch.ps1`——9881 无监听拉 YachiyoBridge、frpc 进程不在拉 YachiyoFrpc）。补"进程被杀后任务级 RestartCount 不复活"缺口（frpc 误杀事故 2 起）。
+
+## 9. provider 大换血（2026-09-20 09:30，用户补充六模型后）
+
+- **额度实测**（百炼源 1-token 探针）：qwen3.8-2.4t-a95b / qwen3.8-omni-flash / glm-5.3 / deepseek-v4-flash-0731 / deepseek-v4.1-flash / deepseek-v4-pro-0813 **全部有额度**；此前已死：qwen3.8-max / qwen3.7-plus / glm-5.2。
+- **时延分层**（导演式任务实测）：a95b≈22s（`enable_thinking:false` 被 400 拒，思考砍不掉，出局延迟敏感位）；omni-flash 关思考 **1.07s**；glm-5.3 4.9s；ds-v4-flash-0731 2.3s / v4.1-flash 3.2s / v4-pro-0813 4.0s；qwen3.8-flash 关思考 **1.0s**（AstrBot 条目本就带 enable_thinking:false，导演现配置即最优，未动）。
+- **主聊天默认**：qwen3.8-max(403) → **阿里百炼/glm-5.3**（新增条目）。**图像描述**：qwen3.7-plus(403) → **阿里百炼/qwen3.8-omni-flash**（新增条目，enable_thinking:false）。导演维持 qwen3.8-flash@no-think。
+- 备份：cmd_config.json.bak_provider_20260920（还原默认=改回 default_provider_id/default_image_caption_provider_id 两键+重启）；旧条目全保留（额度恢复即可切回）。
