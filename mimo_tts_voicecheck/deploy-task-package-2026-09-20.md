@@ -44,3 +44,10 @@ auto×5 态（ready/busy/loading/down/mode=cloud）/ local 明确报错 / cloud 
 ## 7. 实现注意事项（血泪坑）
 
 users.pth 打包机路径（若动引擎目录必改写）/ 训练或推理 prompt ≥3s / Windows 服务化用 NSSM 或计划任务（bridge 守护）/ 心跳只认 last_synth_at 不认进程存活 / api_v2 子进程 stdout 日志轮转。
+
+## 8. 实施收口与终审判词（2026-09-20 晨，ZCode /dispatch 窗）
+
+- **实施**：三件组件全量落地（`Yachiyo_Project/yachiyo_tts_deploy/`，契约+实现+23/23×2 单测；异家族审查 cursor grok 两轮 FAIL→PASS_WITH_FIX，余项当场清）。全链路实测 200/p50 1.9s/p95 5.5s，auto×5 态矩阵全绿，§3 双核验过。git：03871f1+02e4318（push 443 挂账）。
+- **用户终审（AB 三句盲听）**：bridge **勉强可以**；**MiMo 质量判负（太烂）**——听感排序反转（此前口径 MiMo 通透占优）。
+- **处置**：v1 不切 base_url、不上生产；本机侧停用（计划任务 Disable+引擎孤儿清+显存释放），服务器 router 保留。质量优化=v2 BD 宽带重训（§6 首项，handoff §3.2 已论证唯一解）。
+- **v2 唤醒路径**：Enable 双计划任务 → 换 `E:\DATA\YachiyoRuntime\weights\` 新权重 → base_url 切换（runbook §4）。bridge 已胜 MiMo，差的只是质量绝对值。

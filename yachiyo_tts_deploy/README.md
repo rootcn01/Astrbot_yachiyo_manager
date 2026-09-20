@@ -35,6 +35,10 @@ token 真值三处同源：`E:\DATA\YachiyoRuntime\bridge\config.json` ↔ `/etc
 
 ## 4. 上线切换（用户终审门，一键两步）
 
+> **终审已判（2026-09-20 晨，用户）**：AB 三句盲听——**bridge 勉强可以；MiMo 质量判负（太烂）**。
+> 处置：v1 定版**不切 base_url**，本机侧整体停用（计划任务 YachiyoBridge/YachiyoFrpc 已 Disable，引擎孤儿进程已清、显存释放）；服务器 router 保留运行（additive、生产零影响）。质量优化进 v2（BD 宽带重训线，见 §7）——届时 v2 权重就位后：`Enable-ScheduledTask YachiyoBridge; Enable-ScheduledTask YachiyoFrpc`（或登录自动拉起）+ 更新 `E:\DATA\YachiyoRuntime\weights\` + 重启 bridge 任务即可复用本包全部管线。
+> 判词含义：bridge 已在听感上胜过 MiMo，切换生产的用户许可实质已给——卡的是质量绝对值，不是方向。
+
 前置：听一遍 §3 的 AB 三句（bridge vs MiMo V2），可接受才切。
 
 ```bash
