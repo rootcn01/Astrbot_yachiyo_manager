@@ -70,3 +70,9 @@ sudo docker restart astrbot-astrbot-1
 ## 7. v2 清单（不阻塞，见 deploy-task-package §6）
 
 BD 宽带语料重训 / prompt_map sad 升真哀腔档 / 12-26 感謝祭 YT 录档 / B1 桥接 W2 回收验收（本部署已自动触发其前置）。
+
+## 8. v1.1 补丁（2026-09-20 09:2x）
+
+- **bridge 语种探测**：`detect_text_lang()`——文本含假名→ja，纯汉字无假名→zh（防"中文被日语音读"：生产首例 神明大人→しんめいだいじん，两套 ASR 互打架）。参考 prompt_lang 恒 ja。单测 25/25，zh 路径 ASR 回环关键句逐字还原。commit 3db6027。
+- **导演 provider 切换**：`ai_style_director_provider_id` '' → `阿里百炼/qwen3.8-flash`（原默认 qwen3.8-max 免费额度 403；实测百炼 flash 有额度、qwen3.7-plus/glm-5.2/max 均耗尽、deepseek 系全活）。备份 `.bak_director_20260920`。
+- **栈看门狗**：计划任务 `YachiyoStackWatch`（5 分钟周期，`stack_watch.ps1`——9881 无监听拉 YachiyoBridge、frpc 进程不在拉 YachiyoFrpc）。补"进程被杀后任务级 RestartCount 不复活"缺口（frpc 误杀事故 2 起）。
