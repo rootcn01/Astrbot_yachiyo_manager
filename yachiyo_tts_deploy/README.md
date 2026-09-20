@@ -33,13 +33,13 @@ token 真值三处同源：`E:\DATA\YachiyoRuntime\bridge\config.json` ↔ `/etc
 - 音频通道 AB 素材：`mimo_tts_voicecheck/outputs/ab_bridge_smoke_2026-09-20/BRIDGE_s{1,2,3}_default.wav`，与 `outputs/ab_finetune_2026-09-19/MIMO_V2_s{1,2,3}*.wav` 同文对拍。
 - 待用户手做（安全 §4 尾巴）：Clash 加 `IP-CIDR,110.40.182.106/32,DIRECT`；确认本机电源「睡眠=从不」；把微信侧 sender id 补进 AstrBot `plugin_data/astrbot_plugin_voicemode/config.json` 的 `owner_ids`（当前仅 QQ 1010233339+AstrBot 管理员放行）。
 
-## 4. 上线切换（用户终审门，一键两步）
+## 4. 上线切换（已于 2026-09-20 09:01 执行）
 
-> **终审已判（2026-09-20 晨，用户）**：AB 三句盲听——**bridge 勉强可以；MiMo 质量判负（太烂）**。
-> 处置：v1 定版**不切 base_url**，本机侧整体停用（计划任务 YachiyoBridge/YachiyoFrpc 已 Disable，引擎孤儿进程已清、显存释放）；服务器 router 保留运行（additive、生产零影响）。质量优化进 v2（BD 宽带重训线，见 §7）——届时 v2 权重就位后：`Enable-ScheduledTask YachiyoBridge; Enable-ScheduledTask YachiyoFrpc`（或登录自动拉起）+ 更新 `E:\DATA\YachiyoRuntime\weights\` + 重启 bridge 任务即可复用本包全部管线。
-> 判词含义：bridge 已在听感上胜过 MiMo，切换生产的用户许可实质已给——卡的是质量绝对值，不是方向。
+> **终审（用户，2026-09-20 晨）**：AB 三句盲听——bridge **勉强可以**；**MiMo 质量判负（太烂）**→ 按原计划上线，base_url 已切 `http://172.19.0.1:8800/v1`（备份 `config.json.bak_baseurl_20260920`），astrbot 已重启全绿（双插件加载+QQ OneBot 连接+weixin 适配器 token 加载）。
+> **容器内生产路径实弹**：200/2.3s RIFF WAV，router 记账 `engine=bridge forward`。一次 01:01:32Z 瞬态回落（frpc 重连后首连接 blip，自愈；静默回落设计兜住）属预期行为。
+> v2 质量优化照旧走 BD 宽带重训线（§7）——bridge 已胜 MiMo，差的只是质量绝对值；v2 权重就位后直接换 `E:\DATA\YachiyoRuntime\weights\` + 重启 bridge 任务即可。
 
-前置：听一遍 §3 的 AB 三句（bridge vs MiMo V2），可接受才切。
+切换命令（回滚用，反向执行）：
 
 ```bash
 # 服务器上：MiMo 插件 base_url 切到 router（备份先行）
