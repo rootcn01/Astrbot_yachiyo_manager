@@ -73,6 +73,22 @@ def strip_speech(text):
     """去 ♪♫♬♩♭♮、代码围栏、URL、markdown 记号，压缩空白（CONTRACT §2.1）。"""
     t = MD_CHARS_RE.sub(" ", NOTE_RE.sub("", URL_RE.sub(" ", FENCE_RE.sub(" ", text or ""))))
     return WS_RE.sub(" ", t).strip()
+
+
+_KANA_RE = re.compile(r"[\u3040-\u30ff]")
+_HAN_RE = re.compile(r"[\u4e00-\u9fff]")
+
+
+def detect_text_lang(text):
+    """text_lang 探测（v1.1）：含假名→ja（日语铁证）；纯汉字无假名→zh（中文文本，
+    避免日语音读中文——生产首例：神明大人被读成しんめいだいじん）；其余保持 ja 默认
+    （用户长期规则：语音一律日语，导演正常时 speech_text 已译日）。"""
+    t = text or ""
+    if _KANA_RE.search(t):
+        return "ja"
+    if _HAN_RE.search(t):
+        return "zh"
+    return "ja"
 # ---------------------------------------------------------------- 限速（滑窗 RPM）
 class RateLimiter:
     def __init__(self, rpm):
@@ -490,8 +506,8 @@ class BridgeApp:
         wav_path, prompt_text = self.mapper.resolve(tier)
         log.info("synth tier=%s len=%d", tier, len(speech_text))
         payload = {  # POST /tts JSON（TTS_Request 字段, api_v2.py:154-178, :511-514）
-            "text": speech_text, "text_lang": "ja",
-            "ref_audio_path": wav_path, "prompt_text": prompt_text, "prompt_lang": "ja",
+            "text": speech_text, "text_lang": detect_text_lang(speech_text),
+            "ref_audio_path": wav_path, "prompt_text": prompt_text, "prompt_lang": "ja",  # 参考音频恒日语
             "text_split_method": "cut5",  # 引擎默认切法 api_v2.py:164
             "media_type": "wav", "streaming_mode": False}
         status, data = self.supervisor.transport(

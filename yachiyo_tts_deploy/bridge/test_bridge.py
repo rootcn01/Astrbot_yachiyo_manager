@@ -160,6 +160,23 @@ class TestApp(unittest.TestCase):
                          ("やっちょだよ", "ja", "ja", "cut5", "wav", False))
         self.assertEqual(req["ref_audio_path"], "R:/rt/prompts/prompt_default.wav")
         self.assertEqual(req["prompt_text"], "夜景が大好き")
+
+    def test_text_lang_detect_zh_fallback(self):
+        # v1.1：纯汉字无假名 → zh（防日语音读中文，生产首例 神明大人→しんめいだいじん）
+        body = chat_body("早安呀，神明大人。有没有好好吃早餐呀？")
+        r, headers, resp = self.app.handle_chat("t0k", body)
+        self.assertEqual(r, 200)
+        tts = [c for c in self.transport.calls if c["url"].endswith("/tts")][0]
+        self.assertEqual(tts["json_body"]["text_lang"], "zh")
+        self.assertEqual(tts["json_body"]["prompt_lang"], "ja")  # 参考音频恒日语
+
+    def test_text_lang_detect_table(self):
+        for text, lang in [("こんにちは世界", "ja"),          # 假名 → ja
+                           ("早安，吃早餐了吗", "zh"),         # 纯汉字 → zh
+                           ("Hello world", "ja"),             # 无 CJK → 默认 ja
+                           ("", "ja")]:
+            self.assertEqual(bridge.detect_text_lang(text), lang, text)
+
     def test_auth_and_gates(self):
         self.assertEqual(self.app.handle_chat("bad", chat_body("x"))[0], 401)
         # F4: 401 优先于一切——坏 token + 非 JSON body 仍 401（而非 invalid_json）
